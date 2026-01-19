@@ -1,65 +1,62 @@
-import Image from "next/image";
+import Link from 'next/link'
+import FitmentSelector from '@/components/FitmentSelector'
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen relative flex flex-col items-center pt-24 md:pt-48 p-6 overflow-hidden">
+      
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full p-6 md:p-10 flex justify-between items-center max-w-7xl z-50">
+        <div className="text-xl font-black tracking-tighter uppercase">
+          CHASSIS<span className="text-[#e11d48] italic">PRO</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="flex gap-8 items-center">
+            <Link href="/products" className="text-[10px] font-bold tracking-widest text-slate-400 hover:text-[#f97316] transition-all uppercase">
+              Full Catalog
+            </Link>
+            <Link href="/login" className="bg-[#0f172a] text-white px-6 py-2.5 text-[10px] font-black tracking-widest uppercase rounded-sm hover:bg-[#e11d48] transition-all">
+              Partner Login
+            </Link>
         </div>
-      </main>
-    </div>
-  );
+      </nav>
+
+      {/* Hero Content Area */}
+      <div className="relative z-10 text-center space-y-10 w-full max-w-6xl">
+        <div className="space-y-4">
+            <span className="inline-block border border-orange-200 bg-orange-50 text-[#f97316] text-[9px] font-black tracking-[0.4em] px-4 py-1.5 rounded-full uppercase">
+                Malaysia Specialized Hub
+            </span>
+            
+            <h1 className="text-6xl md:text-9xl font-black tracking-tighter leading-[0.85] text-slate-900 uppercase italic">
+                Better <br/>
+                <span className="text-[#e11d48] not-italic underline decoration-[#f97316] decoration-8 underline-offset-16">Control</span>
+            </h1>
+        </div>
+        
+        <p className="text-slate-400 text-sm md:text-lg max-w-2xl mx-auto leading-relaxed font-medium uppercase tracking-tight">
+            AUTHORIZED SPECIALIST FOR <span className="text-slate-900 font-bold">PRORIDE, KYB, 4FLEX</span> AND MORE. 
+        </p>
+        
+        {/* FITMENT SELECTOR CONTAINER */}
+        <div className="pt-4 w-full">
+            <FitmentSelector />
+          
+            <div className="mt-16 flex flex-wrap justify-center gap-x-12 gap-y-6 opacity-20 grayscale">
+                <span className="font-black italic text-2xl">PRORIDE</span>
+                <span className="font-black italic text-2xl">KYB</span>
+                <span className="font-black italic text-2xl">4FLEX</span>
+                <span className="font-black italic text-2xl">APM</span>
+            </div>
+        </div>
+      </div>
+
+      {/* Watermark Decoration */}
+      <div className="fixed bottom-0 right-0 opacity-[0.03] select-none pointer-events-none text-slate-900">
+        <h2 className="text-[25vw] font-black leading-none uppercase italic">PRO</h2>
+      </div>
+
+      {/* Bottom Aesthetic Accent */}
+      <div className="fixed bottom-0 left-0 w-full h-2 bg-gradient-to-r from-[#e11d48] via-[#f97316] to-[#e11d48] opacity-30"></div>
+    </main>
+  )
 }

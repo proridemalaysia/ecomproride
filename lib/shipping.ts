@@ -3,13 +3,24 @@ export const calculateShipping = (postcode: string, items: any[]) => {
   const isLocalKajang = postcode.startsWith('43');
 
   let totalChargeableWeight = 0;
+
   items.forEach(item => {
-    const actual = Number(item.weight_kg) * item.qty;
-    const volumetric = ((Number(item.length_cm) * Number(item.width_cm) * Number(item.height_cm)) / 6000) * item.qty;
-    totalChargeableWeight += Math.max(actual, volumetric);
+    // Force convert to Number and default to 0 to prevent NaN
+    const qty = Number(item.qty) || 1;
+    const w = Number(item.weight_kg) || 0;
+    const L = Number(item.length_cm) || 0;
+    const W = Number(item.width_cm) || 0;
+    const H = Number(item.height_cm) || 0;
+
+    const actualWeight = w * qty;
+    const volumetricWeight = ((L * W * H) / 6000) * qty;
+    
+    // Pick the higher value
+    totalChargeableWeight += Math.max(actualWeight, volumetricWeight);
   });
 
-  const weight = Math.ceil(totalChargeableWeight);
+  // If total weight is still 0 after calculation, default to 1kg for pricing
+  const finalWeight = totalChargeableWeight > 0 ? Math.ceil(totalChargeableWeight) : 1;
 
   const couriers = [
     { 
@@ -43,7 +54,7 @@ export const calculateShipping = (postcode: string, items: any[]) => {
     options: couriers.map(c => {
       const base = isEastMalaysia ? c.baseEast : c.baseWest;
       const addOn = isEastMalaysia ? c.perKgEast : c.perKgWest;
-      const cost = base + (Math.max(0, weight - 1) * addOn);
+      const cost = base + (Math.max(0, finalWeight - 1) * addOn);
       return { ...c, totalCost: cost };
     }).sort((a, b) => a.totalCost - b.totalCost)
   };

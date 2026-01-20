@@ -14,11 +14,11 @@
 body {
   background-color: #fcfcfd;
   color: #0f172a;
-  font-family: 'Inter', sans-serif; /* Cleaner, more modern font */
+  font-family: sans-serif;
   min-height: 100vh;
 }
 
-/* Modern Input Style */
+/* Modern Input Style - Fixed for Tailwind v4 */
 @utility input-modern {
   width: 100%;
   background-color: #ffffff;
@@ -29,11 +29,11 @@ body {
   color: #1e293b;
   outline: none;
   transition: all 0.2s ease;
-}
 
-@utility input-modern:focus {
-  border-color: #f97316;
-  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+  &:focus {
+    border-color: #f97316;
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
+  }
 }
 
 /* Clean Card */
@@ -41,5 +41,5 @@ body {
   background: white;
   border: 1px solid #f1f5f9;
   border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -2px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
 }

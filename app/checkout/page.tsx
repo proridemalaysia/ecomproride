@@ -1,6 +1,6 @@
 "use client"
 import { useCart } from '@/context/CartContext'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { calculateShipping } from '@/lib/shipping'
 import { getStateByPostcode, commonTowns } from '@/lib/postcodes'
 import { supabase } from '@/lib/supabase'
@@ -10,31 +10,34 @@ export default function CheckoutPage() {
   const { cart, clearCart, updateQty, removeItem } = useCart()
   const [loading, setLoading] = useState(false)
   
+  // Form States
   const [customer, setCustomer] = useState({ name: '', email: '', whatsapp: '' })
   const [address, setAddress] = useState({ street: '', postcode: '', town: '', state: '' })
   const [townSuggestions, setTownSuggestions] = useState<string[]>([])
   
+  // Shipping States
   const [shippingData, setShippingData] = useState<{weightInfo: string, options: any[]}>({ weightInfo: '0', options: [] })
   const [selectedCourier, setSelectedCourier] = useState<any>(null)
 
-  // CURRENCY FORMATTER
+  // Professional Currency Formatter
   const formatMoney = (amount: any) => {
     const num = parseFloat(amount);
-    if (isNaN(num)) return 'RM 0.00';
+    if (isNaN(num)) return '0.00';
     return new Intl.NumberFormat('en-MY', {
-      style: 'currency',
-      currency: 'MYR',
       minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(num);
   };
 
   const itemsTotal = cart.reduce((acc: number, item: any) => acc + (Number(item.price || 0) * item.qty), 0)
   const grandTotal = itemsTotal + (selectedCourier?.totalCost || 0)
 
-  useEffect(() => {
+  // Logic to update shipping when postcode or cart changes
+  const updateLogistics = useCallback(() => {
     if (address.postcode.length === 5) {
       const detectedState = getStateByPostcode(address.postcode)
       setAddress(prev => ({ ...prev, state: detectedState }))
+      
       const towns = commonTowns[address.postcode] || []
       setTownSuggestions(towns)
       if (towns.length > 0 && !address.town) setAddress(prev => ({ ...prev, town: towns[0] }))
@@ -45,9 +48,13 @@ export default function CheckoutPage() {
     }
   }, [address.postcode, cart])
 
+  useEffect(() => {
+    updateLogistics()
+  }, [updateLogistics])
+
   const handlePlaceOrder = async () => {
     if (!customer.name || !customer.whatsapp || !customer.email || !selectedCourier) {
-      alert('Sila lengkapkan maklumat perhubungan dan penghantaran.'); return;
+      alert('Please complete all contact and shipping details.'); return;
     }
     setLoading(true)
     try {
@@ -69,117 +76,151 @@ export default function CheckoutPage() {
     } catch (err: any) { alert(err.message) } finally { setLoading(false) }
   }
 
-  const labelStyle = "text-[10px] font-black text-slate-400 tracking-widest mb-2 block uppercase italic"
-  const inputStyle = "w-full bg-white border border-slate-200 p-5 text-sm font-bold text-slate-900 outline-none focus:border-[#f97316] transition-all uppercase rounded-lg"
+  const labelStyle = "text-[10px] font-bold text-slate-400 tracking-widest mb-1.5 block uppercase"
+  const inputStyle = "w-full bg-white border border-slate-200 p-4 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:border-brand-orange focus:ring-4 focus:ring-orange-500/5 transition-all"
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans uppercase italic p-4 md:p-12 pt-32 md:pt-40">
-      <nav className="fixed top-0 w-full left-0 p-6 bg-white/80 backdrop-blur-md border-b border-slate-100 z-50">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans pb-20">
+      <nav className="fixed top-0 w-full left-0 p-5 bg-white/80 backdrop-blur-md border-b border-slate-100 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <Link href="/" className="text-xl font-black italic tracking-tighter uppercase">CHASSIS <span className="text-[#e11d48]">PRO</span></Link>
-            <Link href="/products" className="text-[10px] font-black text-slate-400">← BACK TO SHOP</Link>
+            <Link href="/" className="text-xl font-black tracking-tight">CHASSIS<span className="text-[#e11d48]">PRO</span></Link>
+            <Link href="/products" className="text-xs font-bold text-slate-400 hover:text-brand-orange transition-colors">← CONTINUE SHOPPING</Link>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10">
+      <main className="max-w-7xl mx-auto p-6 md:p-12 pt-28 md:pt-36">
+        <header className="mb-12">
+            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-800 tracking-tight">Checkout Summary</h1>
+            <p className="text-slate-400 text-sm mt-2 font-medium">Finalize your order and select delivery method</p>
+        </header>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
           
-          <div className="lg:col-span-2 space-y-12">
-            <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/50">
-                <h3 className="font-black text-xs mb-8 italic text-[#e11d48] tracking-widest flex items-center gap-2">
-                    <span className="w-6 h-6 bg-[#e11d48] text-white rounded-full flex items-center justify-center not-italic">01</span> 
-                    Contact Details
+          <div className="lg:col-span-2 space-y-10">
+            {/* 01. CUSTOMER INFO */}
+            <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-xs font-bold text-[#e11d48] tracking-[0.2em] uppercase mb-8 flex items-center gap-3">
+                    <span className="w-6 h-6 bg-[#e11d48] text-white rounded-full flex items-center justify-center text-[10px] font-bold">01</span>
+                    Contact Information
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 not-italic">
-                    <div className="md:col-span-2"><label className={labelStyle}>Full Name</label><input onChange={e => setCustomer({...customer, name: e.target.value})} className={inputStyle} /></div>
-                    <div><label className={labelStyle}>WhatsApp No</label><input onChange={e => setCustomer({...customer, whatsapp: e.target.value})} className={inputStyle} /></div>
-                    <div><label className={labelStyle}>Email Address</label><input onChange={e => setCustomer({...customer, email: e.target.value})} className={inputStyle} /></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                        <label className={labelStyle}>Full Name</label>
+                        <input onChange={e => setCustomer({...customer, name: e.target.value})} className={inputStyle} placeholder="e.g. Ahmad Ali" />
+                    </div>
+                    <div>
+                        <label className={labelStyle}>WhatsApp Number</label>
+                        <input onChange={e => setCustomer({...customer, whatsapp: e.target.value})} className={inputStyle} placeholder="60123456789" />
+                    </div>
+                    <div>
+                        <label className={labelStyle}>Email Address</label>
+                        <input onChange={e => setCustomer({...customer, email: e.target.value})} className={inputStyle} placeholder="ali@email.com" />
+                    </div>
                 </div>
             </section>
 
-            <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/50">
-                <h3 className="font-black text-xs mb-8 italic text-[#e11d48] tracking-widest flex items-center gap-2">
-                    <span className="w-6 h-6 bg-[#e11d48] text-white rounded-full flex items-center justify-center not-italic">02</span> 
-                    Delivery Destination
+            {/* 02. SHIPPING ADDRESS */}
+            <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <h3 className="text-xs font-bold text-[#e11d48] tracking-[0.2em] uppercase mb-8 flex items-center gap-3">
+                    <span className="w-6 h-6 bg-[#e11d48] text-white rounded-full flex items-center justify-center text-[10px] font-bold">02</span>
+                    Shipping Destination
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 not-italic">
-                    <div className="md:col-span-2"><label className={labelStyle}>Street Address</label><input onChange={e => setAddress({...address, street: e.target.value})} className={inputStyle} /></div>
-                    <div><label className={labelStyle}>Postcode</label><input value={address.postcode} onChange={e => setAddress({...address, postcode: e.target.value})} className={`${inputStyle} text-[#f97316] text-xl font-black`} maxLength={5} /></div>
-                    <div><label className={labelStyle}>Town</label><input value={address.town} onChange={e => setAddress({...address, town: e.target.value})} className={inputStyle} /></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="md:col-span-2">
+                        <label className={labelStyle}>Street Address</label>
+                        <input onChange={e => setAddress({...address, street: e.target.value})} className={inputStyle} placeholder="House No, Street name, Taman" />
+                    </div>
+                    <div>
+                        <label className={labelStyle}>Postcode</label>
+                        <input value={address.postcode} onChange={e => setAddress({...address, postcode: e.target.value})} className={`${inputStyle} text-brand-orange text-lg font-bold`} placeholder="43000" maxLength={5} />
+                    </div>
+                    <div>
+                        <label className={labelStyle}>Town / City</label>
+                        <input value={address.town} onChange={e => setAddress({...address, town: e.target.value})} className={inputStyle} placeholder="City name" />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className={labelStyle}>State (Auto-detected)</label>
+                        <input value={address.state} readOnly className="w-full bg-slate-50 border border-slate-100 p-4 rounded-xl text-slate-400 text-xs font-bold italic" placeholder="State will appear based on postcode" />
+                    </div>
                 </div>
             </section>
 
-            <section className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/50">
-                <div className="flex justify-between items-center mb-8 border-b border-slate-100 pb-4">
-                    <h3 className="font-black text-xs italic text-[#e11d48] tracking-widest">03. Courier Choice</h3>
-                    <span className="text-[10px] font-black text-slate-400">CHARGEABLE: {shippingData.weightInfo} KG</span>
+            {/* 03. COURIER */}
+            <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+                <div className="flex justify-between items-center mb-8 border-b border-slate-50 pb-4">
+                    <h3 className="text-xs font-bold text-[#e11d48] tracking-[0.2em] uppercase">03. Courier selection</h3>
+                    <span className="text-[10px] font-bold text-brand-orange bg-orange-50 px-3 py-1 rounded-full">Weight: {shippingData.weightInfo} KG</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 not-italic">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {shippingData.options.map(c => (
-                        <div key={c.name} onClick={() => setSelectedCourier(c)} className={`p-6 border-2 rounded-xl cursor-pointer transition-all ${selectedCourier?.name === c.name ? 'border-[#f97316] bg-orange-50 shadow-md' : 'border-slate-100'}`}>
-                            <p className="font-black text-[10px] text-slate-400 uppercase italic tracking-tighter">{c.name}</p>
-                            <p className="font-black text-xl text-slate-900 mt-2">{formatMoney(c.totalCost)}</p>
+                        <div key={c.name} onClick={() => setSelectedCourier(c)} className={`p-6 border-2 rounded-2xl cursor-pointer transition-all ${selectedCourier?.name === c.name ? 'border-brand-orange bg-orange-50/30' : 'border-slate-50 bg-white hover:border-slate-200'}`}>
+                            <p className="font-bold text-[10px] text-slate-400 uppercase tracking-tight">{c.name}</p>
+                            <p className="font-black text-xl text-slate-800 mt-2">RM {formatMoney(c.totalCost)}</p>
+                            <p className="text-[9px] text-slate-400 font-medium mt-1">{c.time}</p>
                         </div>
                     ))}
                 </div>
             </section>
           </div>
 
-          {/* RIGHT: ORDER SUMMARY WITH REMOVE LINK */}
-          <div className="lg:sticky lg:top-32 h-fit">
-            <div className="bg-white border border-slate-200 p-8 rounded-3xl shadow-2xl space-y-8 relative overflow-hidden not-italic">
+          {/* RIGHT: ORDER SUMMARY */}
+          <div className="lg:sticky lg:top-32 space-y-6">
+            <div className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 space-y-8 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#e11d48] to-[#f97316]"></div>
-              <h2 className="text-xl font-black italic border-b border-slate-100 pb-4 uppercase text-slate-900">Order Summary</h2>
+              <h2 className="text-lg font-bold text-slate-800 tracking-tight">Order Summary</h2>
               
-              <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
                 {cart.map((item: any) => (
-                    <div key={item.id} className="bg-slate-50 p-5 rounded-2xl border border-slate-100 relative group">
-                        <p className="font-black text-slate-900 text-xs leading-tight uppercase italic">{item.brand_name} - {item.name_en}</p>
-                        <p className="text-slate-400 text-[9px] mt-1 font-bold">{formatMoney(item.price)} / UNIT</p>
-                        
-                        <div className="flex items-center justify-between mt-4 border-t border-slate-200 pt-4">
+                    <div key={item.id} className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100">
+                        <div className="flex justify-between items-start gap-4">
+                            <div className="flex-1">
+                                <p className="font-bold text-slate-800 text-sm leading-tight">{item.name_en}</p>
+                                <p className="text-slate-400 text-[10px] font-medium mt-1 uppercase">{item.brand_name}</p>
+                            </div>
+                            <button onClick={() => removeItem(item.id)} className="text-slate-300 hover:text-brand-red transition-colors">✕</button>
+                        </div>
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
                             <div className="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-                                <button onClick={() => updateQty(item.id, -1)} className="px-4 py-2 hover:bg-[#e11d48] hover:text-white transition-all font-black text-lg">-</button>
-                                <span className="px-5 py-2 text-sm font-black text-slate-900">{item.qty}</span>
-                                <button onClick={() => updateQty(item.id, 1)} className="px-4 py-2 hover:bg-[#e11d48] hover:text-white transition-all font-black text-lg">+</button>
+                                <button onClick={() => updateQty(item.id, -1)} className="px-3 py-1 hover:bg-slate-100 text-slate-500 font-bold">-</button>
+                                <span className="px-4 py-1 text-xs font-bold text-slate-700">{item.qty}</span>
+                                <button onClick={() => updateQty(item.id, 1)} className="px-3 py-1 hover:bg-slate-100 text-slate-500 font-bold">+</button>
                             </div>
-                            <div className="text-right">
-                                <p className="font-black text-slate-900 text-sm mb-1">{formatMoney(Number(item.price) * item.qty)}</p>
-                                {/* REMOVE BUTTON ADDED HERE */}
-                                <button 
-                                    onClick={() => removeItem(item.id)}
-                                    className="text-[9px] font-black text-slate-300 hover:text-[#e11d48] transition-colors uppercase italic tracking-widest"
-                                >
-                                    Remove Part [X]
-                                </button>
-                            </div>
+                            <span className="font-bold text-slate-800 text-sm italic">RM {formatMoney(Number(item.price) * item.qty)}</span>
                         </div>
                     </div>
                 ))}
+                {cart.length === 0 && <p className="text-center py-10 text-slate-300 font-medium text-xs uppercase tracking-widest">Your cart is empty</p>}
               </div>
 
-              <div className="space-y-4 pt-6 border-t-2 border-slate-100">
-                <div className="flex justify-between text-xs font-black text-slate-400 uppercase italic">
+              <div className="space-y-3 pt-6 border-t border-slate-100">
+                <div className="flex justify-between text-xs font-bold text-slate-400">
                     <span>Subtotal</span>
-                    <span className="text-slate-900">{formatMoney(itemsTotal)}</span>
+                    <span className="text-slate-700">RM {formatMoney(itemsTotal)}</span>
                 </div>
-                <div className="flex justify-between text-xs font-black text-slate-400 uppercase italic">
-                    <span>Shipping Fee ({shippingData.weightInfo} KG)</span>
-                    <span className="text-[#f97316]">{selectedCourier ? formatMoney(selectedCourier.totalCost) : '--'}</span>
+                <div className="flex justify-between text-xs font-bold text-slate-400">
+                    <span>Shipping ({shippingData.weightInfo} KG)</span>
+                    <span className="text-brand-orange">{selectedCourier ? `RM ${formatMoney(selectedCourier.totalCost)}` : '--'}</span>
                 </div>
-                <div className="pt-8 mt-6 border-t-2 border-slate-900">
-                    <p className="font-black text-[10px] italic text-slate-400 uppercase mb-2">Grand Total Payment</p>
-                    <div className="text-4xl md:text-5xl font-black text-[#e11d48] tracking-tighter italic leading-none truncate uppercase">
-                        {formatMoney(grandTotal)}
-                    </div>
+                <div className="pt-6 mt-4 border-t-2 border-slate-100 flex justify-between items-center gap-4">
+                    <span className="font-bold text-xs text-slate-400 uppercase tracking-widest">Total</span>
+                    <span className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">
+                        RM {formatMoney(grandTotal)}
+                    </span>
                 </div>
               </div>
 
-              <button onClick={handlePlaceOrder} disabled={loading || cart.length === 0 || !selectedCourier} className="w-full bg-[#0f172a] text-white py-7 font-black uppercase italic tracking-[0.2em] hover:bg-[#e11d48] transition-all shadow-xl rounded-2xl active:scale-95 disabled:opacity-30">
-                {loading ? 'PROCESSING...' : 'PLACE ORDER & PAY'}
+              <button 
+                onClick={handlePlaceOrder} 
+                disabled={loading || cart.length === 0 || !selectedCourier}
+                className="w-full bg-slate-900 text-white py-6 font-bold uppercase tracking-widest hover:bg-[#e11d48] transition-all shadow-xl rounded-2xl text-xs active:scale-95 disabled:opacity-30"
+              >
+                {loading ? 'Processing...' : 'Place Order & Pay'}
               </button>
             </div>
           </div>
-      </div>
+
+        </div>
+      </main>
     </div>
   )
 }

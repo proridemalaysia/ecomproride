@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
@@ -18,43 +18,41 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true)
   const [activeImage, setActiveImage] = useState('')
   const [showLightbox, setShowLightbox] = useState(false)
+  const [addedNote, setAddedNote] = useState(false)
 
   const formatMoney = (amount: number) => {
-    const value = typeof amount === 'number' ? amount : 0;
     return new Intl.NumberFormat('en-MY', {
       style: 'currency',
       currency: 'MYR',
-    }).format(value);
+      minimumFractionDigits: 2,
+    }).format(amount);
   };
 
-  useEffect(() => {
-    async function getDetails() {
-      if (!id) return
-      setLoading(true)
-      
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
-        if (profile) setUserRole(profile.role)
-      }
-
-      const { data } = await supabase
-        .from('products')
-        .select('*, product_variants(*)')
-        .eq('id', id)
-        .single()
-
-      if (data) {
-        setProduct(data)
-        setActiveImage(data.image_url)
-        const filtered = data.product_variants.filter((v: any) => v.is_active && v.stock_quantity > 0)
-        setActiveVariants(filtered)
-        if (filtered.length > 0) setSelection(filtered[0].attributes)
-      }
-      setLoading(false)
+  const getDetails = useCallback(async () => {
+    if (!id) return
+    setLoading(true)
+    
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
+      if (profile) setUserRole(profile.role)
     }
-    getDetails()
+
+    const { data } = await supabase.from('products').select('*, product_variants(*)').eq('id', id).single()
+
+    if (data) {
+      setProduct(data)
+      setActiveImage(data.image_url)
+      const filtered = data.product_variants.filter((v: any) => v.is_active && v.stock_quantity > 0)
+      setActiveVariants(filtered)
+      if (filtered.length > 0) setSelection(filtered[0].attributes)
+    }
+    setLoading(false)
   }, [id])
+
+  useEffect(() => {
+    getDetails()
+  }, [getDetails])
 
   useEffect(() => {
     if (product?.has_variants) {
@@ -67,27 +65,17 @@ export default function ProductDetailPage() {
 
   const variationLevels = product?.has_variants && activeVariants.length > 0 
     ? activeVariants[0].attributes.map((_: any, i: number) => ({
-        name: i === 0 ? "SPECIFICATION" : i === 1 ? "POSITION" : `OPTION ${i + 1}`,
+        name: i === 0 ? "Specification" : i === 1 ? "Position" : `Option ${i + 1}`,
         options: Array.from(new Set(activeVariants.map(v => v.attributes[i])))
       }))
     : [];
 
-  if (loading) return <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center text-slate-900 italic animate-pulse font-black uppercase tracking-widest">Syncing Hub...</div>
-  if (!product) return <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center font-black uppercase text-slate-300">Not Found</div>
-
-  // CALCULATE PRICE SAFELY
-  const displayPrice = product?.has_variants 
-    ? (userRole === 'DEALER' ? activeVariant?.price_b2b : activeVariant?.price_b2c)
-    : (userRole === 'DEALER' ? product?.price_b2b : product?.price_b2c);
-
   const handleAddToCart = () => {
-    if (product.has_variants && !activeVariant) return alert("Sila lengkapkan pilihan.");
+    if (product.has_variants && !activeVariant) return;
 
-    // FORCE PRICE TO BE A NUMBER
-    const finalPrice = Number(displayPrice);
-    if (isNaN(finalPrice) || finalPrice <= 0) {
-        return alert("Ralat: Harga tidak sah ditemukan. Sila semak variasi.");
-    }
+    const price = product.has_variants 
+      ? (userRole === 'DEALER' ? activeVariant.price_b2b : activeVariant.price_b2c)
+      : (userRole === 'DEALER' ? product.price_b2b : product.price_b2c);
 
     const cartItem = product.has_variants ? {
         id: activeVariant.id, 
@@ -95,9 +83,6 @@ export default function ProductDetailPage() {
         brand_name: product.brand_name,
         image_url: product.image_url,
         weight_kg: product.weight_kg,
-        length_cm: product.length_cm,
-        width_cm: product.width_cm,
-        height_cm: product.height_cm,
         category: product.category
     } : {
         id: product.id,
@@ -105,63 +90,76 @@ export default function ProductDetailPage() {
         brand_name: product.brand_name,
         image_url: product.image_url,
         weight_kg: product.weight_kg,
-        length_cm: product.length_cm,
-        width_cm: product.width_cm,
-        height_cm: product.height_cm,
         category: product.category
     };
 
-    addToCart(cartItem, finalPrice);
-    alert(`SUCCESS: Item added to cart.`);
+    addToCart(cartItem, price);
+    setAddedNote(true);
+    setTimeout(() => setAddedNote(false), 3000);
   }
 
+  if (loading) return <div className="min-h-screen bg-[#fcfcfd] flex items-center justify-center text-slate-400 font-medium">Synchronizing...</div>
+  if (!product) return <div className="min-h-screen bg-[#fcfcfd] flex items-center justify-center font-bold text-slate-300 uppercase">Product Not Found</div>
+
+  const displayPrice = product?.has_variants 
+    ? (userRole === 'DEALER' ? activeVariant?.price_b2b : activeVariant?.price_b2c)
+    : (userRole === 'DEALER' ? product?.price_b2b : product?.price_b2c);
+
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans uppercase italic">
+    <div className="min-h-screen bg-[#fcfcfd] text-slate-900 font-sans">
       {showLightbox && (
         <div className="fixed inset-0 z-[200] bg-slate-900/98 flex items-center justify-center p-6 backdrop-blur-md" onClick={() => setShowLightbox(false)}>
-            <div className="absolute top-10 right-10 text-white font-black cursor-pointer uppercase">Close [X]</div>
-            <img src={activeImage} className="max-w-full max-h-full object-contain" />
+            <button className="absolute top-10 right-10 text-white font-bold hover:text-brand-orange">✕ CLOSE</button>
+            <img src={activeImage} className="max-w-full max-h-full object-contain" alt="Enlarged view" />
         </div>
       )}
 
-      <nav className="p-6 border-b border-slate-200 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <Link href="/products" className="text-slate-400 font-black italic hover:text-[#e11d48] text-[10px] tracking-widest">← BACK TO SHOP</Link>
-        <Link href="/checkout" className="bg-[#0f172a] text-white px-6 py-2 font-black italic text-[10px] tracking-widest rounded-sm">CART ({cart.length})</Link>
+      <nav className="p-6 border-b border-slate-100 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <Link href="/products" className="text-slate-400 font-bold hover:text-[#e11d48] text-xs transition-all tracking-tight">← BACK TO CATALOG</Link>
+        <Link href="/checkout" className="bg-slate-900 text-white px-6 py-2 font-bold text-xs rounded-lg shadow-lg">VIEW ORDER ({cart.length})</Link>
       </nav>
 
-      <main className="max-w-7xl mx-auto p-6 md:p-12 lg:p-20 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32">
+      <main className="max-w-7xl mx-auto p-6 md:p-12 lg:p-20 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 relative">
+        {/* ADDED TO CART NOTIFICATION */}
+        {addedNote && (
+            <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-green-500 text-white px-8 py-3 rounded-full font-bold text-xs shadow-xl animate-in slide-in-from-top-4">
+                ✓ ITEM ADDED TO CART
+            </div>
+        )}
+
         <div className="space-y-8">
-          <div className="bg-white border border-slate-200 aspect-square flex items-center justify-center p-12 overflow-hidden cursor-zoom-in relative rounded-2xl shadow-sm" onClick={() => setShowLightbox(true)}>
-            <img src={activeImage} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 mix-blend-multiply" />
+          <div className="bg-white border border-slate-100 aspect-square flex items-center justify-center p-12 overflow-hidden cursor-zoom-in relative rounded-3xl shadow-sm" onClick={() => setShowLightbox(true)}>
+            <img src={activeImage} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 mix-blend-multiply" alt={product.name_en} />
           </div>
           {product.gallery_urls?.length > 0 && (
             <div className="grid grid-cols-5 gap-4">
+                <button onClick={() => setActiveImage(product.image_url)} className={`aspect-square bg-white border-2 p-2 rounded-xl transition-all ${activeImage === product.image_url ? 'border-brand-orange' : 'border-slate-50'}`}><img src={product.image_url} className="w-full h-full object-contain mix-blend-multiply" /></button>
                 {product.gallery_urls.map((url: string, i: number) => (
-                    <button key={i} onClick={() => setActiveImage(url)} className={`aspect-square bg-white border-2 p-2 rounded-xl transition-all ${activeImage === url ? 'border-[#f97316] shadow-lg' : 'border-slate-100 opacity-40'}`}><img src={url} className="w-full h-full object-contain mix-blend-multiply" /></button>
+                    <button key={i} onClick={() => setActiveImage(url)} className={`aspect-square bg-white border-2 p-2 rounded-xl transition-all ${activeImage === url ? 'border-brand-orange' : 'border-slate-50'}`}><img src={url} className="w-full h-full object-contain mix-blend-multiply" /></button>
                 ))}
             </div>
           )}
         </div>
 
         <div className="flex flex-col">
-          <div className="space-y-2 mb-8">
-              <span className="bg-[#f97316]/10 text-[#f97316] text-[10px] font-black px-4 py-1.5 rounded-full border border-[#f97316]/20 tracking-widest">{product.brand_name} PROFESSIONAL</span>
-              <h1 className="text-4xl md:text-7xl font-black italic uppercase leading-[0.95] tracking-tighter text-slate-900">{product.name_en}</h1>
+          <div className="space-y-3 mb-10">
+              <span className="bg-brand-orange/10 text-brand-orange text-[10px] font-bold px-3 py-1 rounded-md border border-brand-orange/20 tracking-widest uppercase">{product.brand_name} PROFESSIONAL</span>
+              <h1 className="text-4xl md:text-6xl font-extrabold text-slate-800 tracking-tight leading-[1.1]">{product.name_en}</h1>
           </div>
           
-          <div className="bg-white border border-slate-200 p-10 mb-12 rounded-2xl relative shadow-2xl shadow-slate-200/60 overflow-hidden">
-             <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-[#e11d48] to-[#f97316]"></div>
-             <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mb-4">PRICE TIER: {userRole}</p>
-             <p className="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter italic leading-none">
+          <div className="bg-white border border-slate-100 p-10 mb-12 rounded-3xl relative shadow-xl shadow-slate-100">
+             <div className="absolute top-0 left-0 w-1.5 h-full bg-brand-orange"></div>
+             <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-4">Price Tier: {userRole}</p>
+             <p className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight">
                 {displayPrice ? formatMoney(Number(displayPrice)) : '---'}
              </p>
           </div>
 
           {product.has_variants && activeVariants.length > 0 && (
-            <div className="space-y-12 mb-16 not-italic">
+            <div className="space-y-10 mb-16">
                 {variationLevels.map((level: any, levelIdx: number) => (
                     <div key={level.name} className="space-y-4">
-                        <p className="text-slate-400 text-[10px] font-black tracking-widest uppercase italic border-b border-slate-100 pb-2">Select {level.name}</p>
+                        <p className="text-slate-400 text-[10px] font-bold tracking-widest uppercase italic border-b border-slate-50 pb-2">Select {level.name}</p>
                         <div className="flex flex-wrap gap-3">
                             {level.options.map((val: string) => (
                                 <button 
@@ -171,7 +169,7 @@ export default function ProductDetailPage() {
                                         newSelection[levelIdx] = val;
                                         setSelection(newSelection);
                                     }}
-                                    className={`px-8 py-4 text-xs font-black border-2 transition-all tracking-wider rounded-xl uppercase ${selection[levelIdx] === val ? 'border-[#f97316] bg-[#f97316] text-white shadow-xl' : 'border-slate-100 bg-white text-slate-400 hover:border-slate-300'}`}
+                                    className={`px-8 py-3 text-xs font-bold border-2 transition-all rounded-xl uppercase ${selection[levelIdx] === val ? 'border-brand-orange bg-brand-orange text-white shadow-lg shadow-orange-200' : 'border-slate-50 bg-white text-slate-400 hover:border-slate-200'}`}
                                 >{val}</button>
                             ))}
                         </div>
@@ -181,19 +179,28 @@ export default function ProductDetailPage() {
           )}
 
           <div className="flex gap-4 mb-8">
-              <div className="flex-1 bg-slate-100/50 border border-slate-200 p-4 rounded-xl text-center uppercase">
-                  <p className="text-[9px] font-black text-slate-400 tracking-widest mb-1 leading-none">Weight</p>
-                  <p className="text-sm font-black text-slate-900">{product.weight_kg} KG</p>
+              <div className="flex-1 bg-slate-50 border border-slate-100 p-5 rounded-2xl text-center">
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Shipment Weight</p>
+                  <p className="text-base font-bold text-slate-800">{product.weight_kg} KG</p>
               </div>
-              <div className="flex-1 bg-slate-100/50 border border-slate-200 p-4 rounded-xl text-center uppercase">
-                  <p className="text-[9px] font-black text-slate-400 tracking-widest mb-1 leading-none">Dimensions</p>
-                  <p className="text-sm font-black text-slate-900">{product.length_cm}x{product.width_cm}x{product.height_cm} CM</p>
+              <div className="flex-1 bg-slate-50 border border-slate-100 p-5 rounded-2xl text-center">
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Dimensions</p>
+                  <p className="text-base font-bold text-slate-800 uppercase">{product.length_cm}x{product.width_cm}x{product.height_cm} CM</p>
               </div>
           </div>
 
-          <button onClick={handleAddToCart} disabled={product.has_variants && !activeVariant} className="w-full bg-[#0f172a] text-white py-8 font-black uppercase italic tracking-[0.3em] hover:bg-[#e11d48] transition-all shadow-2xl rounded-2xl text-sm disabled:opacity-20 active:scale-95 mb-16">
+          <button onClick={handleAddToCart} disabled={product.has_variants && !activeVariant} className="w-full bg-slate-900 text-white py-8 font-bold uppercase tracking-widest hover:bg-[#e11d48] transition-all shadow-2xl rounded-2xl text-sm disabled:opacity-20 active:scale-95 mb-20">
             {product.has_variants && !activeVariant ? 'OUT OF STOCK' : 'CONFIRM & ADD TO ORDER'}
           </button>
+
+          <div className="space-y-6 border-t border-slate-100 pt-16">
+              <h3 className="text-brand-orange text-xs font-bold uppercase tracking-[0.4em]">Product Description</h3>
+              <div className="text-base text-slate-500 leading-relaxed space-y-4">
+                <p className="font-medium whitespace-pre-wrap">{product.description_en || 'Professional suspension part engineered for durability.'}</p>
+                <hr className="border-slate-50" />
+                <p className="font-medium italic whitespace-pre-wrap">{product.description_bm || 'Bahagian suspensi profesional yang direka untuk ketahanan.'}</p>
+              </div>
+          </div>
         </div>
       </main>
     </div>

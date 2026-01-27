@@ -1,45 +1,43 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-red: #e11d48;
-  --color-brand-orange: #f97316;
-  --color-brand-slate: #0f172a;
+  --color-brand-blue: #2563eb;
+  --color-brand-navy: #0f172a;
+  --color-brand-slate: #64748b;
+  --color-brand-bg: #f8fafc;
 }
 
 :root {
-  --background: #ffffff;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
+  --background: #f8fafc;
   --foreground: #0f172a;
 }
 
 body {
-  background-color: #fcfcfd;
-  color: #0f172a;
-  font-family: sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
   min-height: 100vh;
 }
 
-/* Modern Input Style - Fixed for Tailwind v4 */
-@utility input-modern {
-  width: 100%;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  color: #1e293b;
-  outline: none;
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: #f97316;
-    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1);
-  }
+/* ERP Style Table Row Hover */
+.erp-table-row:hover {
+  background-color: #f1f5f9;
 }
 
-/* Clean Card */
-@utility card-modern {
+/* Professional Input */
+@utility input-erp {
+  width: 100%;
+  border: 1px solid #e2e8f0;
   background: white;
-  border: 1px solid #f1f5f9;
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s;
+
+  &:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
 }

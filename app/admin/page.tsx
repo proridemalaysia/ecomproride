@@ -10,11 +10,13 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'orders' | 'products' | 'users'>('products')
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
 
   useEffect(() => {
     async function checkAccess() {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
+        setUserEmail(session.user.email || '')
         const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
         if (profile?.role === 'ADMIN') setIsAdmin(true)
       }
@@ -23,49 +25,60 @@ export default function AdminDashboard() {
     checkAccess()
   }, [])
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400">Loading Enterprise System...</div>
-  if (!isAdmin) return <div className="min-h-screen flex items-center justify-center">Access Denied</div>
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    window.location.href = '/'
+  }
+
+  if (loading) return <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center text-slate-400 font-medium animate-pulse">Initializing Chassis Pro ERP...</div>
+  
+  if (!isAdmin) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-white uppercase">
+        <h1 className="text-xl font-bold text-slate-300 tracking-widest">Unauthorized Access</h1>
+        <Link href="/login" className="bg-blue-600 text-white px-10 py-4 rounded-xl font-bold text-xs tracking-widest">Back to Login</Link>
+    </div>
+  )
 
   return (
-    <div className="min-h-screen flex bg-[#f8fafc]">
-      
+    <div className="min-h-screen flex bg-[#f8fafc] font-sans">
       {/* SIDEBAR */}
-      <aside className="w-64 bg-[#0f172a] text-white flex flex-col sticky top-0 h-screen hidden lg:flex">
+      <aside className="w-64 bg-[#0f172a] text-white flex flex-col sticky top-0 h-screen hidden lg:flex border-r border-slate-800">
         <div className="p-8 border-b border-slate-800">
-            <h1 className="text-2xl font-bold tracking-tight">MY HUB</h1>
-            <p className="text-[10px] text-slate-500 font-semibold uppercase mt-1">Enterprise System</p>
+            <h1 className="text-xl font-black tracking-tight text-white flex items-center gap-2">
+                <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
+                MY HUB
+            </h1>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Enterprise Portal</p>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
-            <button onClick={() => setActiveTab('orders')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === 'orders' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}>
+        <nav className="flex-1 px-4 space-y-1 mt-6">
+            <button onClick={() => setActiveTab('orders')} className={`w-full flex items-center px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${activeTab === 'orders' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
                 Dashboard
             </button>
-            <button onClick={() => setActiveTab('products')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === 'products' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}>
+            <button onClick={() => setActiveTab('products')} className={`w-full flex items-center px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${activeTab === 'products' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
                 Inventory
             </button>
-            <button onClick={() => setActiveTab('users')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === 'users' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}>
-                Users
+            <button onClick={() => setActiveTab('users')} className={`w-full flex items-center px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${activeTab === 'users' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}>
+                User Roles
             </button>
         </nav>
 
         <div className="p-6 border-t border-slate-800">
-            <button onClick={() => supabase.auth.signOut().then(() => window.location.href='/')} className="text-xs font-bold text-slate-500 hover:text-white uppercase">Logout</button>
+            <p className="text-[10px] text-slate-500 truncate mb-2 uppercase font-bold">{userEmail}</p>
+            <button onClick={handleLogout} className="text-xs font-bold text-slate-500 hover:text-red-400 transition-colors uppercase tracking-widest">Sign Out</button>
         </div>
       </aside>
 
-      {/* MAIN CONTENT Area */}
-      <main className="flex-1 min-w-0">
-        <header className="bg-white border-b border-slate-200 p-6 flex justify-between items-center sticky top-0 z-40 h-20 px-10">
-            <div className="flex-1 max-w-xl">
-                <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
-                    <input className="w-full bg-slate-100 border-none pl-12 pr-4 py-2.5 rounded-xl text-sm outline-none" placeholder="Search item code, SKU..." />
-                </div>
+      {/* CONTENT AREA */}
+      <main className="flex-1 flex flex-col min-w-0">
+        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 p-6 flex items-center justify-between sticky top-0 z-40 h-20 px-10">
+            <h2 className="text-xl font-bold text-slate-800 capitalize tracking-tight">{activeTab}</h2>
+            <div className="flex items-center gap-4">
+                <Link href="/products" className="text-xs font-bold text-blue-600 hover:underline uppercase">Launch Store →</Link>
             </div>
-            <Link href="/products" className="text-xs font-bold text-blue-600 hover:underline">View Shop →</Link>
         </header>
 
-        <div className="p-10">
+        <div className="p-6 lg:p-10">
             {activeTab === 'orders' && <OrdersTab />}
             {activeTab === 'products' && <InventoryTab />}
             {activeTab === 'users' && <UsersTab />}

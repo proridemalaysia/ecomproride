@@ -23,71 +23,49 @@ export default function AdminDashboard() {
     checkAccess()
   }, [])
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/'
-  }
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400 font-semibold">Loading chassis pro hub...</div>
-  
-  if (!isAdmin) return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-10 bg-white">
-        <h1 className="text-xl font-bold mb-4">Unauthorized Access</h1>
-        <Link href="/login" className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold uppercase text-xs">Back to Login</Link>
-    </div>
-  )
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-400">Loading Enterprise System...</div>
+  if (!isAdmin) return <div className="min-h-screen flex items-center justify-center">Access Denied</div>
 
   return (
-    <div className="min-h-screen flex bg-[#fcfcfd]">
+    <div className="min-h-screen flex bg-[#f8fafc]">
       
       {/* SIDEBAR */}
-      <aside className="w-64 bg-[#0f172a] text-white flex flex-col sticky top-0 h-screen hidden lg:flex shadow-2xl">
-        <div className="p-8">
-            <h1 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
-                <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
-                My Hub
-            </h1>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Enterprise Portal</p>
+      <aside className="w-64 bg-[#0f172a] text-white flex flex-col sticky top-0 h-screen hidden lg:flex">
+        <div className="p-8 border-b border-slate-800">
+            <h1 className="text-2xl font-bold tracking-tight">MY HUB</h1>
+            <p className="text-[10px] text-slate-500 font-semibold uppercase mt-1">Enterprise System</p>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1 mt-4">
-            {[
-              { id: 'orders', name: 'Dashboard' },
-              { id: 'products', name: 'Inventory' },
-              { id: 'users', name: 'User Management' }
-            ].map((item) => (
-              <button 
-                key={item.id} 
-                onClick={() => setActiveTab(item.id as any)} 
-                className={`w-full flex items-center px-4 py-3.5 rounded-xl text-sm font-semibold transition-all ${activeTab === item.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:bg-slate-800'}`}
-              >
-                {item.name}
-              </button>
-            ))}
+        <nav className="flex-1 p-4 space-y-1">
+            <button onClick={() => setActiveTab('orders')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === 'orders' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}>
+                Dashboard
+            </button>
+            <button onClick={() => setActiveTab('products')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === 'products' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}>
+                Inventory
+            </button>
+            <button onClick={() => setActiveTab('users')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === 'users' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800'}`}>
+                Users
+            </button>
         </nav>
 
         <div className="p-6 border-t border-slate-800">
-            <button onClick={handleLogout} className="text-xs font-bold text-slate-500 hover:text-red-400 transition-colors uppercase tracking-widest">Sign Out</button>
+            <button onClick={() => supabase.auth.signOut().then(() => window.location.href='/')} className="text-xs font-bold text-slate-500 hover:text-white uppercase">Logout</button>
         </div>
       </aside>
 
-      {/* MAIN VIEW */}
-      <main className="flex-1 flex flex-col">
-        <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 p-6 flex items-center justify-between sticky top-0 z-40 h-20 px-10">
-            <h2 className="text-xl font-extrabold text-slate-800 capitalize tracking-tight">{activeTab}</h2>
-            
-            {/* SEARCH BAR */}
-            <div className="flex-1 max-w-xl mx-10 hidden md:block">
+      {/* MAIN CONTENT Area */}
+      <main className="flex-1 min-w-0">
+        <header className="bg-white border-b border-slate-200 p-6 flex justify-between items-center sticky top-0 z-40 h-20 px-10">
+            <div className="flex-1 max-w-xl">
                 <div className="relative">
-                    <input className="w-full bg-slate-100 border-none pl-10 pr-4 py-2.5 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500/10 transition-all" placeholder="Quick search inventory..." />
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-30">🔍</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                    <input className="w-full bg-slate-100 border-none pl-12 pr-4 py-2.5 rounded-xl text-sm outline-none" placeholder="Search item code, SKU..." />
                 </div>
             </div>
-
-            <Link href="/products" className="text-xs font-bold text-blue-600 hover:underline">Launch Shop →</Link>
+            <Link href="/products" className="text-xs font-bold text-blue-600 hover:underline">View Shop →</Link>
         </header>
 
-        <div className="p-6 lg:p-10">
+        <div className="p-10">
             {activeTab === 'orders' && <OrdersTab />}
             {activeTab === 'products' && <InventoryTab />}
             {activeTab === 'users' && <UsersTab />}

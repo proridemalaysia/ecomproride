@@ -1,35 +1,51 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: #1e3a8a; /* Deeper Blue */
+  --color-brand-primary: #2563eb;
   --color-brand-navy: #0f172a;
-  --color-brand-slate: #64748b;
   --color-brand-bg: #f8fafc;
 }
 
 :root {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
   --background: #f8fafc;
-  --foreground: #1e293b;
+  --foreground: #0f172a;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: 'Inter', sans-serif;
   min-height: 100vh;
-  letter-spacing: -0.02em; /* Tighter spacing like the screenshot */
 }
 
 /* ERP Table Styles */
-@utility table-head {
-  @apply px-6 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100;
+.erp-table {
+  @apply w-full text-left border-collapse;
 }
 
-@utility item-code-primary {
-  @apply font-bold text-[#1e3a8a] text-sm tracking-tight;
+.erp-table thead {
+  @apply bg-slate-50 border-b border-slate-200;
 }
 
-@utility item-code-secondary {
-  @apply text-[10px] text-slate-400 font-medium;
+.erp-table th {
+  @apply px-6 py-4 text-[11px] font-semibold text-slate-400 uppercase tracking-wider;
+}
+
+.erp-table td {
+  @apply px-6 py-4 border-b border-slate-100 align-middle;
+}
+
+/* Simple Input */
+@utility input-erp {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #2563eb;
+  }
 }

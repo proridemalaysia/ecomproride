@@ -123,14 +123,15 @@ export default function InventoryTab() {
     return true;
   }
 
+  // Consistent variable names to fix Vercel Type error
   const labelS = "text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-widest";
   const inputS = "w-full border border-slate-200 p-4 rounded-xl text-sm font-semibold outline-none focus:border-blue-600 transition-all";
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       <div className="flex justify-between items-center px-2">
-        <div><h2 className="text-2xl font-bold text-slate-800">Inventory</h2><p className="text-sm text-slate-400">{products.length} Professional Records</p></div>
-        <button onClick={() => {setShowForm(true); setIsEditing(false); setActiveSubTab('basic');}} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold text-xs shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
+        <div><h2 className="text-2xl font-bold text-slate-800 tracking-tight">Inventory</h2><p className="text-sm text-slate-400">Total active items: {products.length}</p></div>
+        <button onClick={() => {setShowForm(true); setIsEditing(false); setActiveSubTab('basic');}} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold text-xs shadow-xl shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest">
           {isSaving ? 'Saving...' : '+ Add New Item'}
         </button>
       </div>
@@ -138,14 +139,14 @@ export default function InventoryTab() {
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         <table className="w-full text-left border-collapse">
             <thead className="bg-slate-50 border-b">
-                <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><th className="px-8 py-5">Item Code</th><th className="px-8 py-5">Product Info</th><th className="px-8 py-5 text-center">Stock</th><th className="px-8 py-5 text-right">Price (RM)</th><th className="px-8 py-5"></th></tr>
+                <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><th className="px-8 py-5">Item Code</th><th className="px-8 py-5">Product Info</th><th className="px-8 py-5 text-center">In Stock</th><th className="px-8 py-5 text-right">Price (RM)</th><th className="px-8 py-5"></th></tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
                 {products.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-50/80 transition-all">
-                        <td className="px-8 py-6"><span className="font-bold text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg text-xs uppercase tracking-tighter">PR-{p.id.toString().padStart(4, '0')}</span></td>
+                    <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
+                        <td className="px-8 py-6"><span className="font-bold text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg text-xs tracking-tighter italic uppercase">PRO-{p.id.toString().padStart(4, '0')}</span></td>
                         <td className="px-8 py-6"><p className="font-bold text-slate-700 text-sm leading-tight">{p.name_en}</p><p className="text-[10px] text-slate-400 font-bold uppercase mt-1">{p.brand_name}</p></td>
-                        <td className="px-8 py-6 text-center"><span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold">10</span></td>
+                        <td className="px-8 py-6 text-center"><span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-[10px] font-black italic">AVAILABLE</span></td>
                         <td className="px-8 py-6 text-right font-black text-slate-700 text-sm">{p.price_b2c.toFixed(2)}</td>
                         <td className="px-8 py-6 text-right"><button onClick={() => handleEditClick(p)} className="text-slate-300 hover:text-blue-600 transition-all font-bold">✎</button></td>
                     </tr>
@@ -161,7 +162,7 @@ export default function InventoryTab() {
                     <h2 className="text-xl font-bold text-slate-800">{isEditing ? 'Update Listing' : 'New Listing'}</h2>
                     <button onClick={() => setShowForm(false)} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-400">✕</button>
                 </div>
-                <div className="flex gap-4 md:gap-8 px-8 py-4 border-b bg-slate-50 sticky top-[89px] z-10 no-scrollbar">
+                <div className="flex gap-4 md:gap-8 px-8 py-4 border-b bg-slate-50 sticky top-[89px] z-10 overflow-x-auto no-scrollbar">
                     {subTabOrder.map((t, idx) => (
                         <button key={t} onClick={() => setActiveSubTab(t)} className={`text-[10px] font-bold tracking-wider pb-2 border-b-2 transition-all whitespace-nowrap ${activeSubTab === t ? 'border-blue-600 text-blue-600' : isTabComplete(t) ? 'border-green-500 text-green-500' : 'border-transparent text-slate-400'}`}>
                             {idx + 1}. {t.toUpperCase()} {isTabComplete(t) && '✓'}
@@ -175,7 +176,7 @@ export default function InventoryTab() {
                                 <div className="space-y-6">
                                     <div><label className={labelS}>Name (EN)</label><input className={inputS} value={formData.name_en} onChange={e => setFormData({...formData, name_en: e.target.value})} /></div>
                                     <div><label className={labelS}>Name (BM)</label><input className={inputS} value={formData.name_bm} onChange={e => setFormData({...formData, name_bm: e.target.value})} /></div>
-                                    <div><label className={labelS}>Category</label><select className={inputS} value={formData.category_id || ''} onChange={e => setFormData({...formData, category_id: e.target.value})}><option value="">-- Choose Category --</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+                                    <div><label className={labelS}>Category</label><select className={inputS} value={formData.category_id || ''} onChange={e => setFormData({...formData, category_id: e.target.value})}><option value="">Select</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
                                 </div>
                                 <div className="space-y-6">
                                     <div><label className={labelS}>Main Image Link</label><input className={inputS} value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} /></div>
@@ -186,43 +187,50 @@ export default function InventoryTab() {
                         {activeSubTab === 'spec' && (
                             <>
                                 <div className="space-y-6 bg-slate-50 p-8 border border-slate-200 rounded-lg">
-                                    <label className="text-blue-600 font-bold text-[10px] tracking-widest uppercase mb-4 block italic">Vehicle Fitment</label>
-                                    <div><label className={labelS}>Car Brand</label><select className={inputS} value={formData.fit_car_brand} onChange={e => setFormData({...formData, fit_car_brand: e.target.value})}><option value="">-- SELECT --</option>{Array.from(new Set(vehicleList.map(v => v.brand))).map(b => <option key={b} value={b}>{b}</option>)}</select></div>
-                                    <div><label className={labelS}>Car Model</label><select className={inputS} value={formData.fit_vehicle_id} onChange={e => setFormData({...formData, fit_vehicle_id: e.target.value})} disabled={!formData.fit_car_brand}><option value="">-- SELECT --</option>{vehicleList.filter(v => v.brand === formData.fit_car_brand).map(v => <option key={v.id} value={v.id}>{v.model}</option>)}</select></div>
+                                    <label className="text-blue-600 font-bold text-[10px] tracking-widest uppercase mb-4 block leading-none italic">Vehicle Fitment</label>
+                                    <div><label className={labelS}>Brand</label><select className={inputS} value={formData.fit_car_brand} onChange={e => setFormData({...formData, fit_car_brand: e.target.value})}><option value="">-- SELECT --</option>{Array.from(new Set(vehicleList.map(v => v.brand))).map(b => <option key={b} value={b}>{b}</option>)}</select></div>
+                                    <div><label className={labelS}>Model</label><select className={inputS} value={formData.fit_vehicle_id} onChange={e => setFormData({...formData, fit_vehicle_id: e.target.value})} disabled={!formData.fit_car_brand}><option value="">-- SELECT --</option>{vehicleList.filter(v => v.brand === formData.fit_car_brand).map(v => <option key={v.id} value={v.id}>{v.model}</option>)}</select></div>
                                 </div>
                                 <div className="space-y-6">
-                                    <div><label className={labelS}>Manufacturer</label><select className={inputS} value={formData.product_brand_id || ''} onChange={e => setFormData({...formData, product_brand_id: e.target.value})}><option value="">-- SELECT --</option>{productBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></div>
+                                    <div><label className={labelS}>Part Manufacturer</label><select className={inputS} value={formData.product_brand_id || ''} onChange={e => setFormData({...formData, product_brand_id: e.target.value})}><option value="">-- SELECT BRAND --</option>{productBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></div>
                                     <div><label className={labelS}>Warranty</label><input className={inputS} value={formData.spec_warranty} onChange={e => setFormData({...formData, spec_warranty: e.target.value})} /></div>
                                 </div>
                             </>
                         )}
+                        {activeSubTab === 'desc' && (
+                            <>
+                                <div><label className={labelS}>Description (EN)</label><textarea className={`${inputS} h-80 resize-none font-sans`} value={formData.description_en} onChange={e => setFormData({...formData, description_en: e.target.value})} /></div>
+                                <div><label className={labelS}>Description (BM)</label><textarea className={`${inputS} h-80 resize-none font-sans`} value={formData.description_bm} onChange={e => setFormData({...formData, description_bm: e.target.value})} /></div>
+                            </>
+                        )}
                         {activeSubTab === 'sales' && (
                             <div className="md:col-span-2 space-y-10">
-                                <button type="button" onClick={() => setHasVariations(!hasVariations)} className={`px-12 py-3 rounded-xl font-bold text-xs transition-all ${hasVariations ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>{hasVariations ? 'VARIATIONS ENABLED' : 'ENABLE VARIATIONS'}</button>
+                                <button type="button" onClick={() => setHasVariations(!hasVariations)} className={`px-12 py-4 font-black text-xs italic transition-all ${hasVariations ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-200 text-slate-500'}`}>{hasVariations ? 'VARIATIONS ENABLED' : 'ENABLE VARIATIONS'}</button>
                                 {hasVariations ? (
-                                    <div className="space-y-10 animate-in fade-in">
+                                    <div className="space-y-8 animate-in fade-in">
                                         {!isEditing && variationLevels.map((level, lIdx) => (
-                                            <div key={lIdx} className="bg-slate-50 border p-8 relative rounded-xl">
-                                                <button onClick={() => setVariationLevels(variationLevels.filter((_, i) => i !== lIdx))} className="absolute top-4 right-4 text-red-500 font-bold text-[9px]">REMOVE</button>
+                                            <div key={lIdx} className="bg-slate-50 border p-6 relative rounded-lg">
+                                                <button onClick={() => setVariationLevels(variationLevels.filter((_, i) => i !== lIdx))} className="absolute top-4 right-4 text-red-500 font-bold text-[9px] uppercase">Remove</button>
                                                 <div className="grid grid-cols-2 gap-8">
                                                     <div><label className={labelS}>Level Name</label><input className={inputS} value={level.name} onChange={e => {const n = [...variationLevels]; n[lIdx].name = e.target.value.toUpperCase(); setVariationLevels(n);}} /></div>
-                                                    <div><label className={labelS}>Options</label><input className={inputS} value={level.options.join(',')} onChange={e => {const n = [...variationLevels]; n[lIdx].options = e.target.value.split(',').map(s => s.toUpperCase()); setVariationLevels(n);}} /></div>
+                                                    <div><label className={labelS}>Options (Comma separated)</label><input className={inputS} value={level.options.join(',')} onChange={e => {const n = [...variationLevels]; n[lIdx].options = e.target.value.split(',').map(s => s.toUpperCase()); setVariationLevels(n);}} /></div>
                                                 </div>
                                             </div>
                                         ))}
+                                        {!isEditing && <button onClick={() => setVariationLevels([...variationLevels, { name: 'POSITION', options: ['FRONT'] }])} className="w-full border-2 border-dashed border-slate-200 p-4 text-[10px] font-bold text-slate-400 uppercase">+ Add Level</button>}
                                         <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                                            <table className="w-full text-left text-sm">
-                                                <thead className="bg-slate-50 text-[10px] font-bold text-slate-400">
-                                                    <tr><th className="p-5">VARIANT</th><th className="p-5">RETAIL RM</th><th className="p-5 text-blue-600">DEALER RM</th><th className="p-5">STOCK</th><th className="p-5 text-center">STATUS</th></tr>
+                                            <table className="w-full text-left border-collapse min-w-[1000px]">
+                                                <thead className="bg-slate-50 text-[10px] font-bold text-slate-400 border-b border-slate-200 italic uppercase">
+                                                    <tr><th className="p-5">VARIANT</th><th className="p-5 text-blue-600">RETAIL RM</th><th className="p-5 text-red-500">DEALER RM</th><th className="p-5 text-center">STOCK</th><th className="p-5 text-center">STATUS</th></tr>
                                                 </thead>
                                                 <tbody>
                                                     {variantGrid.map((v, i) => (
-                                                        <tr key={i} className={`border-b ${!v.is_active && 'opacity-30'}`}>
-                                                            <td className="p-5 font-bold">{v.name}</td>
-                                                            <td className="p-2"><input type="number" className="input-erp !p-2" value={variantGrid[i].price_b2c} onChange={e => { const g = [...variantGrid]; g[i].price_b2c = Number(e.target.value); setVariantGrid(g); }} /></td>
-                                                            <td className="p-2"><input type="number" className="input-erp !p-2" value={variantGrid[i].price_b2b} onChange={e => { const g = [...variantGrid]; g[i].price_b2b = Number(e.target.value); setVariantGrid(g); }} /></td>
-                                                            <td className="p-2"><input type="number" className="input-erp !p-2 text-center" value={variantGrid[i].stock} onChange={e => { const g = [...variantGrid]; g[i].stock = Number(e.target.value); setVariantGrid(g); }} /></td>
-                                                            <td className="p-2 text-center"><button type="button" onClick={() => {const g = [...variantGrid]; g[i].is_active = !g[i].is_active; setVariantGrid(g);}} className={`px-4 py-1 rounded-full text-[8px] font-black ${v.is_active ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-500'}`}>{v.is_active ? 'ON' : 'OFF'}</button></td>
+                                                        <tr key={i} className={`border-b border-slate-100 ${!v.is_active ? 'opacity-30' : 'hover:bg-slate-50'}`}>
+                                                            <td className="p-5 font-black text-xs italic">{v.name}</td>
+                                                            <td className="p-2"><input type="number" step="0.01" className="bg-white border border-slate-200 p-4 w-full text-sm font-black rounded-sm" value={variantGrid[i].price_b2c} onChange={e => { const g = [...variantGrid]; g[i].price_b2c = Number(e.target.value); setVariantGrid(g); }} /></td>
+                                                            <td className="p-2"><input type="number" step="0.01" className="bg-white border border-slate-200 p-4 w-full text-sm font-black rounded-sm" value={variantGrid[i].price_b2b} onChange={e => { const g = [...variantGrid]; g[i].price_b2b = Number(e.target.value); setVariantGrid(g); }} /></td>
+                                                            <td className="p-2 text-center"><input type="number" className="bg-white border border-slate-200 p-4 w-24 text-sm font-black text-center mx-auto block rounded-sm" value={variantGrid[i].stock} onChange={e => { const g = [...variantGrid]; g[i].stock = Number(e.target.value); setVariantGrid(g); }} /></td>
+                                                            <td className="p-3 text-center"><button type="button" onClick={() => {const g = [...variantGrid]; g[i].is_active = !g[i].is_active; setVariantGrid(g);}} className={`px-4 py-2 text-[8px] font-black rounded-full transition-all ${v.is_active ? 'bg-green-600 text-white shadow-lg' : 'bg-slate-200 text-slate-400'}`}>{v.is_active ? 'ON' : 'OFF'}</button></td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -238,22 +246,22 @@ export default function InventoryTab() {
                             </div>
                         )}
                         {activeSubTab === 'ship' && (
-                            <>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 <div><label className={labelS}>Weight (KG)</label><input type="number" step="0.1" className={`${inputS} max-w-xs`} value={formData.weight_kg} onChange={e => setFormData({...formData, weight_kg: Number(e.target.value)})} /></div>
                                 <div className="grid grid-cols-3 gap-6">
                                     <div><label className={labelS}>L (CM)</label><input type="number" className={inputS} value={formData.length_cm} onChange={e => setFormData({...formData, length_cm: Number(e.target.value)})} /></div>
-                                    <div><label className={labelStyle}>W (CM)</label><input type="number" className={inputS} value={formData.width_cm} onChange={e => setFormData({...formData, width_cm: Number(e.target.value)})} /></div>
-                                    <div><label className={labelStyle}>H (CM)</label><input type="number" className={inputS} value={formData.height_cm} onChange={e => setFormData({...formData, height_cm: Number(e.target.value)})} /></div>
+                                    <div><label className={labelS}>W (CM)</label><input type="number" className={inputS} value={formData.width_cm} onChange={e => setFormData({...formData, width_cm: Number(e.target.value)})} /></div>
+                                    <div><label className={labelS}>H (CM)</label><input type="number" className={inputS} value={formData.height_cm} onChange={e => setFormData({...formData, height_cm: Number(e.target.value)})} /></div>
                                 </div>
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
 
-                <div className="p-10 border-t bg-slate-50 flex justify-end gap-6 mt-auto">
+                <div className="p-10 border-t border-slate-100 flex flex-col md:flex-row justify-end gap-6 bg-slate-50 mt-auto sticky bottom-0">
                     <button onClick={() => {setShowForm(false); setIsEditing(false);}} className="px-10 py-5 font-bold text-xs text-slate-400">Cancel Wizard</button>
                     {activeSubTab !== 'ship' ? (
-                        <button onClick={() => setActiveSubTab(subTabOrder[subTabOrder.indexOf(activeSubTab) + 1])} disabled={!isTabComplete(activeSubTab)} className={`px-24 py-6 font-bold rounded-xl text-sm transition-all shadow-xl ${isTabComplete(activeSubTab) ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Next Step →</button>
+                        <button onClick={() => setActiveSubTab(subTabOrder[subTabOrder.indexOf(activeSubTab) + 1])} disabled={!isTabComplete(activeSubTab)} className={`px-24 py-6 font-bold rounded-xl text-sm transition-all shadow-xl ${isTabComplete(activeSubTab) ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>Next Step →</button>
                     ) : (
                         <button onClick={handleSave} disabled={!isTabComplete('ship')} className={`px-24 py-6 font-bold rounded-xl text-sm transition-all shadow-xl ${isTabComplete('ship') ? 'bg-slate-900 text-white hover:bg-blue-600' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>{isEditing ? 'COMMIT UPDATES' : 'PUBLISH LISTING'}</button>
                     )}

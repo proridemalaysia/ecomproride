@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google"; // Import Inter
+import { Plus_Jakarta_Sans } from "next/font/google"; // Import the pleasant modern font
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 
-const inter = Inter({ 
+const jakarta = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
-  variable: "--font-inter", // Set a CSS variable
+  variable: "--font-jakarta",
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${jakarta.variable} font-sans antialiased bg-[#fcfcfd]`}>
         <CartProvider>
           {children}
         </CartProvider>

@@ -19,53 +19,68 @@ export default function InventoryTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold text-slate-800">Warehouse Hub</h2>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all">
-          + Add New Item
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Inventory Stock</h2>
+            <p className="text-sm text-slate-400 font-medium">Manage and track your warehouse listings</p>
+        </div>
+        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold text-xs shadow-xl shadow-blue-500/20 transition-all active:scale-95">
+          + Add New Listing
         </button>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50 border-b border-slate-200">
-                <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    <th className="px-6 py-4">Item Code</th>
-                    <th className="px-6 py-4">Product Info</th>
-                    <th className="px-6 py-4">Category</th>
-                    <th className="px-6 py-4 text-center">Stock</th>
-                    <th className="px-6 py-4 text-right">Sell (RM)</th>
-                    <th className="px-6 py-4"></th>
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-                {products.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
-                        <td className="px-6 py-5">
-                            <p className="font-bold text-blue-600 text-sm">PR-{p.id.toString().padStart(4, '0')}</p>
-                        </td>
-                        <td className="px-6 py-5">
-                            <p className="font-bold text-slate-700 text-sm">{p.name_en}</p>
-                            <p className="text-[10px] text-slate-400 uppercase font-semibold">{p.brand_name}</p>
-                        </td>
-                        <td className="px-6 py-5">
-                            <p className="text-[10px] font-bold text-slate-500 uppercase bg-slate-100 px-2 py-1 rounded inline-block">{p.category}</p>
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold">10</span>
-                        </td>
-                        <td className="px-6 py-5 text-right font-black text-slate-700 text-sm">
-                            {p.price_b2c.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-5 text-right">
-                            <button className="text-slate-300 hover:text-blue-600 transition-all text-sm">✎</button>
-                        </td>
+      <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+            <table className="w-full text-left">
+                <thead className="bg-slate-50 border-b border-slate-100">
+                    <tr className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">
+                        <th className="px-8 py-5">Item Code</th>
+                        <th className="px-8 py-5">Product Details</th>
+                        <th className="px-8 py-5">Status</th>
+                        <th className="px-8 py-5 text-center">In Stock</th>
+                        <th className="px-8 py-5 text-right">Price (RM)</th>
+                        <th className="px-8 py-5"></th>
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                    {products.map(p => (
+                        <tr key={p.id} className="hover:bg-slate-50/80 transition-all cursor-default">
+                            <td className="px-8 py-6">
+                                <span className="font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-xs">
+                                    PR-{p.id.toString().padStart(4, '0')}
+                                </span>
+                            </td>
+                            <td className="px-8 py-6">
+                                <p className="font-bold text-slate-800 text-sm leading-tight mb-1">{p.name_en}</p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{p.brand_name}</p>
+                            </td>
+                            <td className="px-8 py-6">
+                                <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md uppercase">
+                                    {p.category}
+                                </span>
+                            </td>
+                            <td className="px-8 py-6 text-center">
+                                <span className="text-green-600 bg-green-50 px-3 py-1 rounded-full text-[10px] font-black">
+                                    AVAILABLE
+                                </span>
+                            </td>
+                            <td className="px-8 py-6 text-right">
+                                <span className="font-black text-slate-800 text-sm">
+                                    {p.price_b2c.toFixed(2)}
+                                </span>
+                            </td>
+                            <td className="px-8 py-6 text-right">
+                                <button className="w-8 h-8 rounded-lg text-slate-300 hover:bg-slate-100 hover:text-blue-600 transition-all font-bold">✎</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
         {products.length === 0 && !loading && (
-            <div className="p-20 text-center text-slate-400 text-sm italic">Inventory is empty.</div>
+            <div className="py-24 text-center">
+                <p className="text-slate-300 font-bold italic">No records found in inventory.</p>
+            </div>
         )}
       </div>
     </div>

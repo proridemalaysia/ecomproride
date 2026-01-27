@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: #2563eb;
+  --color-brand-primary: #1e3a8a; /* Deeper Blue */
   --color-brand-navy: #0f172a;
   --color-brand-slate: #64748b;
-  --color-brand-bg: #fcfcfd;
+  --color-brand-bg: #f8fafc;
 }
 
 :root {
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui;
-  --background: #fcfcfd;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
+  --background: #f8fafc;
   --foreground: #1e293b;
 }
 
@@ -18,32 +18,18 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   min-height: 100vh;
-  letter-spacing: -0.01em; /* Makes the font look more premium */
+  letter-spacing: -0.02em; /* Tighter spacing like the screenshot */
 }
 
-/* Modern Input Style */
-@utility input-erp {
-  width: 100%;
-  border: 1px solid #e2e8f0;
-  background: white;
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  outline: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
-  }
+/* ERP Table Styles */
+@utility table-head {
+  @apply px-6 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100;
 }
 
-/* Scrollbar for data-heavy sections */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+@utility item-code-primary {
+  @apply font-bold text-[#1e3a8a] text-sm tracking-tight;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
-  border-radius: 10px;
+
+@utility item-code-secondary {
+  @apply text-[10px] text-slate-400 font-medium;
 }

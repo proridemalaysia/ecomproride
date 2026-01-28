@@ -13,23 +13,17 @@ function ProductsList() {
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState('RETAIL')
-  const [user, setUser] = useState<any>(null)
 
   const fetchProducts = useCallback(async () => {
     setLoading(true)
-    
-    // 1. Check Auth & Role
     const { data: { session } } = await supabase.auth.getSession()
     if (session) {
-      setUser(session.user)
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
       if (profile) setUserRole(profile.role)
     }
 
-    // 2. Fetch Inventory
     let data;
     if (vId) {
-      // Filter by Vehicle Fitment
       const { data: filteredData } = await supabase
         .from('products')
         .select(`*, product_fitment!inner(vehicle_id), product_variants(*)`)
@@ -37,109 +31,68 @@ function ProductsList() {
         .order('id', { ascending: false });
       data = filteredData;
     } else {
-      // Show All
       const { data: allData } = await supabase
         .from('products')
         .select('*, product_variants(*)')
         .order('id', { ascending: false });
       data = allData;
     }
-
     setProducts(data || [])
     setLoading(false)
   }, [vId])
 
-  useEffect(() => {
-    fetchProducts()
-  }, [fetchProducts])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    window.location.reload()
-  }
+  useEffect(() => { fetchProducts() }, [fetchProducts])
 
   return (
     <div className="min-h-screen bg-[#fcfcfd] text-slate-900 font-sans">
-      {/* NAVIGATION BAR */}
       <nav className="p-5 border-b border-slate-100 flex justify-between items-center bg-white/90 sticky top-0 z-50 backdrop-blur-md">
-        <Link href="/" className="flex items-center gap-3 group">
-            <img 
-                src="https://vaqlsjjkcctuwrskssga.supabase.co/storage/v1/object/public/logo/KEsq.png" 
-                className="h-8 w-auto group-hover:rotate-12 transition-transform duration-300" 
-                alt="KE" 
-            />
-            <span className="text-xl font-black tracking-tight text-slate-800 uppercase italic">
-                CHASSIS <span className="text-[#e11d48]">PRO</span>
-            </span>
+        <Link href="/" className="text-xl font-black tracking-tight text-slate-800">
+          CHASSIS<span className="text-blue-600">PRO</span>
         </Link>
-        
-        <div className="flex items-center gap-4">
-            <Link href="/checkout" className="bg-slate-900 text-white px-5 py-2 rounded-lg font-bold text-xs flex items-center gap-3 hover:bg-[#f97316] transition-all shadow-lg">
-                View Order <span className="bg-[#e11d48] text-white px-2 py-0.5 rounded text-[10px]">{cart.length}</span>
-            </Link>
-            {user ? (
-                <button onClick={handleLogout} className="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase">Logout</button>
-            ) : (
-                <Link href="/login" className="text-[10px] font-bold text-slate-400 hover:text-blue-600 uppercase">Login</Link>
-            )}
-        </div>
+        <Link href="/checkout" className="bg-slate-900 text-white px-5 py-2 rounded-lg font-bold text-xs flex items-center gap-3">
+            Order Cart <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px]">{cart.length}</span>
+        </Link>
       </nav>
 
       <main className="p-6 md:p-12 max-w-7xl mx-auto">
-        <header className="mb-16 border-l-4 border-[#f97316] pl-6">
-          <h1 className="text-3xl md:text-5xl font-extrabold text-slate-800 tracking-tight italic">
-            {vId ? 'Compatible Inventory' : 'Authorized Catalog'}
+        <header className="mb-16 border-l-4 border-blue-600 pl-6">
+          <h1 className="text-3xl md:text-5xl font-bold text-slate-800 tracking-tight">
+            {vId ? 'Compatible Parts' : 'Product Catalog'}
           </h1>
-          <p className="text-slate-400 text-sm mt-2 font-medium italic">
-            {userRole === 'DEALER' ? "✓ Accessing Wholesale Dealer Portal" : "Professional Grade Performance Parts"}
+          <p className="text-slate-400 text-sm mt-2 font-medium">
+            {userRole === 'DEALER' ? "Wholesale Dealer Pricing Active" : "Authorized Specialist Inventory"}
           </p>
         </header>
 
         {loading ? (
-          <div className="h-64 flex flex-col items-center justify-center gap-4">
-             <div className="animate-spin h-8 w-8 border-t-2 border-brand-orange rounded-full"></div>
-             <p className="font-bold text-slate-300 text-xs tracking-widest uppercase">Fetching Specialist Stock...</p>
-          </div>
+          <div className="h-64 flex items-center justify-center text-slate-300 font-medium animate-pulse uppercase tracking-widest text-xs">Loading Hub Data...</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
             {products.length === 0 ? (
-                <div className="col-span-full py-32 text-center bg-white border border-dashed border-slate-200 rounded-[2.5rem]">
-                    <p className="text-slate-300 font-bold text-lg italic">No items matched your vehicle search</p>
-                    <Link href="/" className="text-[#f97316] font-bold text-xs underline mt-4 block uppercase tracking-widest">Change Vehicle</Link>
-                </div>
+                <div className="col-span-full py-32 text-center bg-white border border-dashed border-slate-200 rounded-[2.5rem]"><p className="text-slate-300 font-bold text-lg">No parts found</p></div>
             ) : products.map((p) => {
-              const basePrice = userRole === 'DEALER' ? p.price_b2b : p.price_b2c;
-              const isMultiVariant = p.has_variants && p.product_variants?.length > 0;
-              
+              const price = userRole === 'DEALER' ? p.price_b2b : p.price_b2c;
+              const hasMinPrice = p.has_variants && p.product_variants?.length > 0;
+              const minPrice = hasMinPrice ? Math.min(...p.product_variants.map((v: any) => userRole === 'DEALER' ? v.price_b2b : v.price_b2c)) : price;
+
               return (
-                <div key={p.id} className="bg-white border border-slate-100 p-8 hover:shadow-2xl hover:shadow-slate-200 transition-all group rounded-[2.5rem] flex flex-col relative overflow-hidden">
+                <div key={p.id} className="bg-white border border-slate-100 p-8 hover:shadow-2xl transition-all group rounded-[2.5rem] flex flex-col shadow-sm">
                   <Link href={`/products/${p.id}`} className="flex-1">
-                    <div className="aspect-square bg-slate-50 mb-8 flex items-center justify-center p-8 overflow-hidden rounded-2xl relative">
-                      <img src={p.image_url} alt={p.name_en} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 mix-blend-multiply" />
-                      {isMultiVariant && (
-                        <span className="absolute top-4 right-4 bg-white/90 border border-slate-100 px-3 py-1 rounded-full text-[8px] font-black text-slate-400 tracking-widest uppercase">Multi-Option</span>
-                      )}
+                    <div className="aspect-square bg-slate-50 mb-8 flex items-center justify-center p-6 overflow-hidden rounded-2xl">
+                      <img src={p.image_url} alt={p.name_en} className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700" />
                     </div>
-                    <p className="text-[#f97316] text-[10px] font-bold tracking-widest mb-2 italic uppercase">{p.brand_name || 'GENUINE'}</p>
-                    <h2 className="text-slate-800 font-extrabold text-xl leading-tight tracking-tight mb-4 lowercase first-letter:uppercase">
+                    <p className="text-blue-600 text-[10px] font-bold tracking-widest mb-2 uppercase">{p.brand_name || 'GENUINE'}</p>
+                    <h2 className="text-slate-800 font-bold text-lg leading-tight tracking-tight group-hover:text-blue-600 transition-colors">
                       {p.name_en}
                     </h2>
                   </Link>
-                  
-                  <div className="pt-6 border-t border-slate-50 flex justify-between items-center">
+                  <div className="pt-6 mt-6 border-t border-slate-50 flex justify-between items-end">
                       <div>
-                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-tighter mb-1 italic">
-                            {isMultiVariant ? 'Starting From' : 'Retail Price'}
-                        </p>
-                        <p className="text-slate-900 font-black text-3xl tracking-tighter italic leading-none">
-                          RM {basePrice?.toFixed(2)}
-                        </p>
+                        <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest mb-1">{hasMinPrice ? 'Starting From' : 'Retail Price'}</p>
+                        <p className="text-slate-900 font-black text-2xl tracking-tighter">RM {minPrice.toFixed(2)}</p>
                       </div>
                   </div>
-
-                  <Link href={`/products/${p.id}`} className="w-full mt-8 bg-slate-900 text-white text-center py-5 font-black text-xs tracking-[0.2em] hover:bg-[#e11d48] transition-all rounded-2xl shadow-xl uppercase italic active:scale-95">
-                    View Product Details
-                  </Link>
+                  <Link href={`/products/${p.id}`} className="w-full mt-8 bg-slate-900 text-white text-center py-4 rounded-xl font-bold text-xs tracking-wider hover:bg-blue-600 transition-all">View Details</Link>
                 </div>
               )
             })}
@@ -150,11 +103,4 @@ function ProductsList() {
   )
 }
 
-// THE WRAPPER THAT FIXES THE VERCEL BUILD ERROR
-export default function ProductsPage() {
-    return (
-        <Suspense fallback={<div className="bg-[#fcfcfd] min-h-screen"></div>}>
-            <ProductsList />
-        </Suspense>
-    )
-}
+export default function ProductsPage() { return ( <Suspense fallback={<div className="bg-[#fcfcfd] min-h-screen"></div>}><ProductsList /></Suspense> ) }

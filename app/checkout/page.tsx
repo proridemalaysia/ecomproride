@@ -32,7 +32,6 @@ export default function CheckoutPage() {
     return new Intl.NumberFormat('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
   };
 
-  // 1. Logic Calculations
   const hasFullSet = cart.some((item: any) => item.name_en.toLowerCase().includes('full set'));
   const itemsTotal = cart.reduce((acc: number, item: any) => acc + (Number(item.price || 0) * item.qty), 0)
   const discount = appliedVoucher ? Number(appliedVoucher.discount_amount) : 0
@@ -53,6 +52,9 @@ export default function CheckoutPage() {
       if (result.options.length > 0) setSelectedCourier(result.options[0])
       const detectedState = getStateByPostcode(address.postcode)
       setAddress(prev => ({ ...prev, state: detectedState }))
+      const towns = commonTowns[address.postcode] || []
+      setTownSuggestions(towns)
+      if (towns.length > 0 && !address.town) setAddress(prev => ({ ...prev, town: towns[0] }))
     }
   }, [address.postcode, cart])
 
@@ -84,33 +86,26 @@ export default function CheckoutPage() {
     } catch (err: any) { alert(err.message) } finally { setLoading(false) }
   }
 
-  // --- STYLING VARS ---
   const headerLabel = "text-sm font-black text-slate-800 uppercase tracking-tight mb-2 block italic";
-  const inputStyle = "w-full bg-white border border-slate-200 p-4 rounded-xl text-sm font-medium text-slate-600 outline-none focus:border-blue-600 transition-all shadow-sm";
+  const inputStyle = "w-full bg-white border border-slate-200 p-4 rounded-xl text-sm font-medium text-slate-500 outline-none focus:border-blue-600 transition-all shadow-sm";
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans pb-20 p-4 md:p-12 pt-32 md:pt-40 relative">
-      {/* BACKGROUND DECORATION */}
-      <div className="fixed inset-0 opacity-[0.4] pointer-events-none" 
-           style={{backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '30px 30px'}}></div>
-
-      <nav className="fixed top-0 w-full left-0 p-5 bg-white/90 backdrop-blur-md border-b border-slate-100 z-50">
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-4 uppercase italic">
-            <Link href="/" className="text-xl font-black tracking-tighter">CHASSIS <span className="text-blue-600">PRO</span></Link>
-            <Link href="/products" className="text-xs font-bold text-slate-400 hover:text-blue-600 transition-all">← Back to Catalog</Link>
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans pb-20 p-4 md:p-12 pt-32 md:pt-40">
+      <nav className="fixed top-0 w-full left-0 p-5 bg-white/80 backdrop-blur-md border-b border-slate-100 z-50">
+        <div className="max-w-7xl mx-auto flex justify-between items-center px-4">
+            <Link href="/" className="text-xl font-black tracking-tight uppercase">CHASSIS <span className="text-blue-600">PRO</span></Link>
+            <Link href="/products" className="text-xs font-bold text-slate-400 hover:text-blue-600 transition-all uppercase">← Back</Link>
         </div>
       </nav>
 
       <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10">
-          
           <div className="lg:col-span-2 space-y-10">
-            {/* 01. FREE GIFTS */}
             <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
                 <h3 className="text-xs font-bold text-blue-600 tracking-[0.2em] uppercase mb-8 italic">01. Select Your Free Gift</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div onClick={() => setWantsSticker(!wantsSticker)} className={`p-6 border-2 rounded-2xl cursor-pointer transition-all flex items-center gap-4 ${wantsSticker ? 'border-blue-600 bg-blue-50' : 'border-slate-50 bg-slate-50/50'}`}>
                         <div className={`w-6 h-6 rounded flex items-center justify-center border-2 ${wantsSticker ? 'bg-blue-600 border-blue-600' : 'bg-white border-slate-200'}`}>{wantsSticker && <span className="text-white text-xs font-bold">✓</span>}</div>
-                        <div><p className="font-bold text-sm text-slate-800">Proride Performance Sticker</p><p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest">Gift for all orders</p></div>
+                        <div><p className="font-bold text-sm text-slate-800">Proride Performance Sticker</p><p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest">Free Gift</p></div>
                     </div>
                     <div className={`p-6 border-2 rounded-2xl transition-all ${hasFullSet ? 'border-slate-100 bg-white' : 'border-dashed border-slate-200 opacity-50'}`}>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 italic">Premium T-Shirt (Full Set Only)</p>
@@ -124,24 +119,22 @@ export default function CheckoutPage() {
                 </div>
             </section>
 
-            {/* 02. PROMOTION CODE */}
             <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
                 <h3 className="text-xs font-bold text-blue-600 tracking-[0.2em] uppercase mb-8 italic">02. Promotion Code</h3>
                 <div className="flex gap-3">
                     <input className="flex-1 bg-slate-50 border border-slate-200 p-4 rounded-xl text-sm font-bold outline-none focus:border-blue-600 uppercase" placeholder="VOUCHER CODE" value={voucherCode} onChange={(e) => setVoucherCode(e.target.value)} />
                     <button onClick={async () => {
                         const { data } = await supabase.from('vouchers').select('*').eq('code', voucherCode.toUpperCase()).eq('is_active', true).single()
-                        if (data) { setAppliedVoucher(data); alert("Discount Applied!"); } else { alert("Invalid Code."); }
+                        if (data) { setAppliedVoucher(data); alert("Voucher Applied!"); } else { alert("Invalid Code."); }
                     }} className="bg-[#0f172a] text-white px-10 rounded-xl font-bold text-xs uppercase hover:bg-blue-600 transition-all">Apply</button>
                 </div>
             </section>
 
-            {/* 03. SHIPPING DETAILS (Standardized Fonts) */}
             <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
                 <h3 className="text-xs font-bold text-blue-600 tracking-[0.2em] uppercase mb-8 italic">03. Shipping Details</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="md:col-span-2"><label className={headerLabel}>Full Name</label><input onChange={e => setCustomer({...customer, name: e.target.value})} className={inputStyle} /></div>
-                    <div><label className={headerLabel}>WhatsApp No</label><input onChange={e => setCustomer({...customer, whatsapp: e.target.value})} className={inputStyle} placeholder="601..." /></div>
+                    <div><label className={headerLabel}>WhatsApp No</label><input onChange={e => setCustomer({...customer, whatsapp: e.target.value})} className={inputStyle} /></div>
                     <div><label className={headerLabel}>Email Address</label><input onChange={e => setCustomer({...customer, email: e.target.value})} className={inputStyle} /></div>
                     <div className="md:col-span-2"><label className={headerLabel}>Street Address</label><textarea onChange={e => setAddress({...address, street: e.target.value})} className={`${inputStyle} h-24 resize-none`} /></div>
                     <div><label className={headerLabel}>Postcode</label><input value={address.postcode} onChange={e => setAddress({...address, postcode: e.target.value})} className={inputStyle} maxLength={5} /></div>
@@ -149,7 +142,6 @@ export default function CheckoutPage() {
                 </div>
             </section>
 
-            {/* 04. COURIER SELECTION */}
             <section className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
                 <div className="flex justify-between items-center mb-8 border-b pb-4">
                     <h3 className="text-xs font-bold text-blue-600 tracking-[0.2em] uppercase italic">04. Courier Selection</h3>
@@ -166,20 +158,15 @@ export default function CheckoutPage() {
             </section>
           </div>
 
-          {/* RIGHT: EDITABLE SUMMARY SIDEBAR */}
           <div className="lg:sticky lg:top-32 h-fit">
-            <div className="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 space-y-8 relative overflow-hidden">
+            <div className="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-2xl space-y-8 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#e11d48] to-[#f97316]"></div>
-              <h2 className="text-lg font-black border-b pb-4 uppercase text-slate-800 italic tracking-tighter">Order Summary</h2>
-              
+              <h2 className="text-lg font-black border-b pb-4 uppercase text-slate-800 italic">Order Total</h2>
               <div className="space-y-6 max-h-[380px] overflow-y-auto pr-2 custom-scrollbar">
                 {cart.map((item: any) => (
-                    <div key={item.id} className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 relative group">
+                    <div key={item.id} className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100">
                         <div className="flex justify-between items-start gap-4">
-                            <div className="flex-1">
-                                <p className="font-bold text-slate-800 text-xs leading-tight uppercase italic">{item.name_en}</p>
-                                <p className="text-slate-400 text-[9px] mt-1 font-bold tracking-widest italic">RM {formatMoney(item.price)}</p>
-                            </div>
+                            <p className="font-bold text-slate-800 text-xs leading-tight uppercase italic">{item.name_en}</p>
                             <button onClick={() => removeItem(item.id)} className="text-slate-300 hover:text-red-500 transition-colors">✕</button>
                         </div>
                         <div className="flex items-center justify-between mt-4 border-t border-slate-200 pt-4">
@@ -193,30 +180,23 @@ export default function CheckoutPage() {
                     </div>
                 ))}
               </div>
-
-              {/* GIFTS & TOTALS */}
               <div className="space-y-4 pt-6 border-t-2 border-slate-100">
                 {(wantsSticker || tshirtSize) && (
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-2 mb-4">
-                        <p className="text-[9px] font-bold text-blue-400 uppercase tracking-widest leading-none mb-1">Gifts Applied</p>
                         {wantsSticker && <p className="text-[10px] font-black text-blue-700 italic uppercase leading-none">✓ Proride Sticker</p>}
                         {tshirtSize && <p className="text-[10px] font-black text-blue-700 italic uppercase leading-none">✓ T-Shirt Size: {tshirtSize}</p>}
                     </div>
                 )}
-                <div className="flex justify-between text-xs font-bold text-slate-400 uppercase italic"><span>Items Total</span><span className="text-slate-900">RM {formatMoney(itemsTotal)}</span></div>
-                <div className="flex justify-between text-xs font-bold text-slate-400 uppercase italic"><span>Delivery Fee</span><span className="text-slate-900">{selectedCourier ? `RM ${formatMoney(selectedCourier.totalCost)}` : '--'}</span></div>
-                {appliedVoucher && <div className="flex justify-between text-xs font-bold text-green-600 uppercase italic"><span>Voucher</span><span>- RM {formatMoney(discount)}</span></div>}
-                
+                <div className="flex justify-between text-xs font-bold text-slate-400"><span>Items Total</span><span className="text-slate-900">RM {formatMoney(itemsTotal)}</span></div>
+                <div className="flex justify-between text-xs font-bold text-slate-400"><span>Delivery Fee</span><span className="text-slate-900">RM {formatMoney(selectedCourier?.totalCost || 0)}</span></div>
+                {appliedVoucher && <div className="flex justify-between text-xs font-bold text-green-600 uppercase"><span>Voucher</span><span>- RM {formatMoney(discount)}</span></div>}
                 <div className="pt-8 mt-4 border-t-2 border-slate-900 flex justify-between items-center gap-4">
                     <span className="font-bold text-xs text-slate-400 uppercase tracking-widest italic">Total</span>
-                    <span className="text-3xl md:text-4xl font-black text-blue-600 tracking-tighter italic leading-none whitespace-nowrap">
-                        RM {formatMoney(grandTotal)}
-                    </span>
+                    <span className="text-2xl md:text-3xl font-black text-blue-600 tracking-tighter italic leading-none whitespace-nowrap">RM {formatMoney(grandTotal)}</span>
                 </div>
               </div>
-
               <button onClick={handlePlaceOrder} disabled={loading || cart.length === 0 || !selectedCourier} className="w-full bg-[#0f172a] text-white py-7 font-black uppercase italic tracking-widest hover:bg-blue-600 transition-all shadow-xl rounded-2xl active:scale-95 disabled:opacity-20">
-                {loading ? 'STORING ORDER...' : 'PLACE ORDER & PAY'}
+                {loading ? 'PROCESSING...' : 'PLACE ORDER & PAY'}
               </button>
             </div>
           </div>

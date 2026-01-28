@@ -51,7 +51,7 @@ export default function InventoryTab() {
     getMeta()
   }, [fetchProducts])
 
-  // --- EDIT HANDLER (FIXED) ---
+  // --- EDIT HANDLER ---
   const handleEditClick = (p: any) => {
     const fitment = p.product_fitment?.[0];
     const vehicle = vehicleList.find(v => v.id.toString() === fitment?.vehicle_id?.toString());
@@ -72,10 +72,7 @@ export default function InventoryTab() {
         setHasVariations(false);
     }
     
-    setEditId(p.id);
-    setIsEditing(true);
-    setShowForm(true);
-    setActiveSubTab('basic');
+    setEditId(p.id); setIsEditing(true); setShowForm(true); setActiveSubTab('basic');
   }
 
   // --- SAVE HANDLER ---
@@ -83,21 +80,12 @@ export default function InventoryTab() {
     setIsSaving(true);
     const firstV = variantGrid.find(v => v.is_active) || variantGrid[0];
     const payload = {
-        name_en: formData.name_en, 
-        name_bm: formData.name_bm || formData.name_en,
-        category_id: formData.category_id || null, 
-        product_brand_id: formData.product_brand_id || null,
-        description_en: formData.description_en, 
-        description_bm: formData.description_bm || formData.description_en,
-        image_url: formData.image_url, 
-        gallery_urls: formData.gallery_input.split('\n').filter(l => l.trim() !== ''),
-        weight_kg: formData.weight_kg, 
-        length_cm: formData.length_cm, 
-        width_cm: formData.width_cm, 
-        height_cm: formData.height_cm,
-        has_variants: hasVariations, 
-        price_b2c: hasVariations ? firstV.price_b2c : formData.price_b2c, 
-        price_b2b: hasVariations ? firstV.price_b2b : formData.price_b2b,
+        name_en: formData.name_en, name_bm: formData.name_bm || formData.name_en,
+        category_id: formData.category_id || null, product_brand_id: formData.product_brand_id || null,
+        description_en: formData.description_en, description_bm: formData.description_bm || formData.description_en,
+        image_url: formData.image_url, gallery_urls: formData.gallery_input.split('\n').filter(l => l.trim() !== ''),
+        weight_kg: formData.weight_kg, length_cm: formData.length_cm, width_cm: formData.width_cm, height_cm: formData.height_cm,
+        has_variants: hasVariations, price_b2c: hasVariations ? firstV.price_b2c : formData.price_b2c, price_b2b: hasVariations ? firstV.price_b2b : formData.price_b2b,
         brand_name: productBrands.find(b=>b.id.toString()===formData.product_brand_id)?.name || 'GENUINE',
         category: categories.find(c=>c.id.toString()===formData.category_id)?.name || 'PART',
         specs: { origin: formData.spec_origin, warranty: formData.spec_warranty, material: formData.spec_material }
@@ -142,57 +130,29 @@ export default function InventoryTab() {
     return true;
   }
 
+  const labelS = "text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-widest";
+  const inputS = "w-full border border-slate-200 p-4 rounded-xl text-sm font-semibold outline-none focus:border-blue-600 transition-all";
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       <div className="flex justify-between items-center px-2">
-        <div>
-            <h2 className="text-2xl font-bold text-slate-800">Warehouse Stock</h2>
-            <p className="text-sm text-slate-400">Total active items: {products.length}</p>
-        </div>
-        <button 
-            onClick={() => {setShowForm(true); setIsEditing(false); setActiveSubTab('basic'); setFormData({name_en: '', name_bm: '', category_id: '', product_brand_id: '', description_en: '', description_bm: '', price_b2c: 0, price_b2b: 0, weight_kg: 0, length_cm: 0, width_cm: 0, height_cm: 0, image_url: '', gallery_input: '', spec_origin: 'Malaysia', spec_warranty: '12 Months', spec_material: 'Steel', fit_car_brand: '', fit_vehicle_id: ''})}} 
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-xl shadow-blue-500/20 active:scale-95 transition-all"
-        >
-          {isSaving ? 'Processing...' : '+ Add New Part'}
-        </button>
+        <h2 className="text-2xl font-bold text-slate-800">Inventory Stock</h2>
+        <button onClick={() => {setShowForm(true); setIsEditing(false); setActiveSubTab('basic');}} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-xl shadow-blue-500/20 transition-all">+ Add New Item</button>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
         <table className="w-full text-left border-collapse">
             <thead className="bg-slate-50 border-b">
-                <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    <th className="px-8 py-5">Item Code</th>
-                    <th className="px-8 py-5">Product Info</th>
-                    <th className="px-8 py-5">Pos / Type</th>
-                    <th className="px-8 py-5 text-center">In Stock</th>
-                    <th className="px-8 py-5 text-right">Price (RM)</th>
-                    <th className="px-8 py-5"></th>
-                </tr>
+                <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><th className="px-8 py-5">Item Code</th><th className="px-8 py-5">Product Info</th><th className="px-8 py-5 text-center">In Stock</th><th className="px-8 py-5 text-right">Price (RM)</th><th className="px-8 py-5"></th></tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-50">
                 {products.map(p => (
-                    <tr key={p.id} className="hover:bg-slate-50/80 transition-all">
-                        <td className="px-8 py-6">
-                            <p className="font-bold text-blue-800 text-sm tracking-tight">PR-{p.id.toString().padStart(4, '0')}</p>
-                            <p className="text-[10px] text-slate-400">PR-{p.id.toString().padStart(4, '0')}</p>
-                        </td>
-                        <td className="px-8 py-6">
-                            <p className="font-bold text-slate-700 text-sm">{p.name_en}</p>
-                            <p className="text-[10px] text-slate-400 font-semibold">{p.brand_name}</p>
-                        </td>
-                        <td className="px-8 py-6">
-                            <span className="text-[10px] font-bold text-slate-400 italic">MIN</span>
-                        </td>
-                        <td className="px-8 py-6 text-center">
-                            <span className="bg-green-50 text-green-700 px-3 py-1 rounded-md text-[10px] font-bold border border-green-100">10</span>
-                        </td>
+                    <tr key={p.id} className="hover:bg-slate-50/80 transition-all cursor-default">
+                        <td className="px-8 py-6"><span className="font-bold text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg text-xs uppercase">PRO-{p.id.toString().padStart(4, '0')}</span></td>
+                        <td className="px-8 py-6"><p className="font-bold text-slate-700 text-sm leading-tight">{p.name_en}</p><p className="text-[10px] text-slate-400 font-bold uppercase mt-1">{p.brand_name}</p></td>
+                        <td className="px-8 py-6 text-center"><span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-[10px] font-black italic">AVAILABLE</span></td>
                         <td className="px-8 py-6 text-right font-black text-slate-700 text-sm">{p.price_b2c.toFixed(2)}</td>
-                        <td className="px-8 py-6 text-right">
-                            {/* THE PENCIL BUTTON (NOW FUNCTIONAL) */}
-                            <button onClick={() => handleEditClick(p)} className="text-slate-300 hover:text-blue-600 transition-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            </button>
-                        </td>
+                        <td className="px-8 py-6 text-right"><button onClick={() => handleEditClick(p)} className="text-slate-300 hover:text-blue-600 transition-all font-bold text-xl">✎</button></td>
                     </tr>
                 ))}
             </tbody>
@@ -206,6 +166,7 @@ export default function InventoryTab() {
                     <h2 className="text-xl font-bold text-slate-800">{isEditing ? 'Update Listing' : 'New Listing'}</h2>
                     <button onClick={() => setShowForm(false)} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-400">✕</button>
                 </div>
+
                 <div className="flex gap-4 md:gap-8 px-8 py-4 border-b bg-slate-50 sticky top-[89px] z-10 overflow-x-auto no-scrollbar">
                     {subTabOrder.map((t, idx) => (
                         <button key={t} onClick={() => setActiveSubTab(t)} className={`text-[10px] font-bold tracking-wider pb-2 border-b-2 transition-all whitespace-nowrap ${activeSubTab === t ? 'border-blue-600 text-blue-600' : isTabComplete(t) ? 'border-green-500 text-green-500' : 'border-transparent text-slate-400'}`}>
@@ -214,61 +175,106 @@ export default function InventoryTab() {
                     ))}
                 </div>
 
-                <div className="p-10 flex-1">
+                <div className="p-10 flex-1 not-italic">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         {activeSubTab === 'basic' && (
                             <>
-                                <div><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Name (EN)</label><input className="input-erp" value={formData.name_en} onChange={e => setFormData({...formData, name_en: e.target.value})} /></div>
-                                <div><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Name (BM)</label><input className="input-erp" value={formData.name_bm} onChange={e => setFormData({...formData, name_bm: e.target.value})} /></div>
-                                <div><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Category</label><select className="input-erp" value={formData.category_id || ''} onChange={e => setFormData({...formData, category_id: e.target.value})}><option value="">Select</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-                                <div><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Main Image Link</label><input className="input-erp" value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} /></div>
-                                <div className="md:col-span-2"><label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 block">Gallery Links (Per Line)</label><textarea className="input-erp h-32" value={formData.gallery_input} onChange={e => setFormData({...formData, gallery_input: e.target.value})} /></div>
+                                <div className="space-y-6">
+                                    <div><label className={labelS}>Product Name (EN)</label><input className="input-erp" value={formData.name_en} onChange={e => setFormData({...formData, name_en: e.target.value})} placeholder="e.g. Saga Rear Shock Absorber" /></div>
+                                    <div><label className={labelS}>Product Name (BM)</label><input className="input-erp" value={formData.name_bm} onChange={e => setFormData({...formData, name_bm: e.target.value})} placeholder="e.g. Penyerap Hentak Belakang Saga" /></div>
+                                    <div><label className={labelS}>Category</label><select className="input-erp" value={formData.category_id || ''} onChange={e => setFormData({...formData, category_id: e.target.value})}><option value="">Select Category</option>{categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+                                </div>
+                                <div className="space-y-6">
+                                    <div><label className={labelS}>Main Image Link (ImgBB)</label><input className="input-erp" value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} placeholder="https://i.ibb.co/..." /></div>
+                                    <div><label className={labelS}>Gallery Links (Per Line)</label><textarea className={`${input-erp} h-32`} value={formData.gallery_input} onChange={e => setFormData({...formData, gallery_input: e.target.value})} placeholder="https://i.ibb.co/..." /></div>
+                                </div>
                             </>
                         )}
-                        {/* Remaining subtabs Spec, Desc, Sales, Ship follow the same "input-erp" and value binding pattern */}
+                        {activeSubTab === 'spec' && (
+                            <>
+                                <div className="space-y-6 bg-slate-50 p-8 border rounded-2xl">
+                                    <label className="text-blue-600 font-bold text-[10px] tracking-widest uppercase">Vehicle Compatibility</label>
+                                    <div><label className={labelS}>Car Brand</label><select className="input-erp" value={formData.fit_car_brand} onChange={e => setFormData({...formData, fit_car_brand: e.target.value})}><option value="">Select Brand</option>{Array.from(new Set(vehicleList.map(v => v.brand))).map(b => <option key={b} value={b}>{b}</option>)}</select></div>
+                                    <div><label className={labelS}>Car Model</label><select className="input-erp" value={formData.fit_vehicle_id} onChange={e => setFormData({...formData, fit_vehicle_id: e.target.value})} disabled={!formData.fit_car_brand}><option value="">Select Model</option>{vehicleList.filter(v => v.brand === formData.fit_car_brand).map(v => <option key={v.id} value={v.id}>{v.model}</option>)}</select></div>
+                                </div>
+                                <div className="space-y-6">
+                                    <div><label className={labelS}>Part Manufacturer</label><select className="input-erp" value={formData.product_brand_id || ''} onChange={e => setFormData({...formData, product_brand_id: e.target.value})}><option value="">Select Brand</option>{productBrands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></div>
+                                    <div><label className={labelS}>Warranty Duration</label><input className="input-erp" value={formData.spec_warranty} onChange={e => setFormData({...formData, spec_warranty: e.target.value})} /></div>
+                                    <div><label className={labelS}>Material Construction</label><input className="input-erp" value={formData.spec_material} onChange={e => setFormData({...formData, spec_material: e.target.value})} /></div>
+                                </div>
+                            </>
+                        )}
+                        {activeSubTab === 'desc' && (
+                            <>
+                                <div><label className={labelS}>Long Description (EN)</label><textarea className={`${input-erp} h-80`} value={formData.description_en} onChange={e => setFormData({...formData, description_en: e.target.value})} /></div>
+                                <div><label className={labelS}>Long Description (BM)</label><textarea className={`${input-erp} h-80`} value={formData.description_bm} onChange={e => setFormData({...formData, description_bm: e.target.value})} /></div>
+                            </>
+                        )}
                         {activeSubTab === 'sales' && (
                             <div className="md:col-span-2 space-y-10">
-                                <button type="button" onClick={() => setHasVariations(!hasVariations)} className={`px-12 py-3 rounded-xl font-bold text-xs transition-all ${hasVariations ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-200 text-slate-500'}`}>{hasVariations ? 'ON' : 'OFF'}</button>
-                                {hasVariations && (
-                                    <div className="space-y-8 animate-in fade-in">
+                                <div className="flex items-center gap-4 bg-slate-50 p-8 border rounded-2xl">
+                                    <span className="font-bold text-sm">Enable Product Variations?</span>
+                                    <button type="button" onClick={() => setHasVariations(!hasVariations)} className={`px-12 py-3 rounded-xl font-bold text-xs transition-all ${hasVariations ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-200 text-slate-500'}`}>{hasVariations ? 'ON' : 'OFF'}</button>
+                                </div>
+                                {hasVariations ? (
+                                    <div className="space-y-10 animate-in fade-in">
                                         {variationLevels.map((level, lIdx) => (
-                                            <div key={lIdx} className="bg-slate-50 border p-6 relative rounded-xl">
-                                                <button onClick={() => setVariationLevels(variationLevels.filter((_, i) => i !== lIdx))} className="absolute top-4 right-4 text-red-500 font-bold text-[9px]">REMOVE</button>
+                                            <div key={lIdx} className="bg-slate-50 border p-8 relative rounded-2xl">
+                                                <button onClick={() => setVariationLevels(variationLevels.filter((_, i) => i !== lIdx))} className="absolute top-4 right-4 text-red-500 font-bold text-[9px] uppercase tracking-widest">Remove Level</button>
                                                 <div className="grid grid-cols-2 gap-8">
-                                                    <div><label className="text-xs font-bold text-slate-400 mb-2 block">Level Name</label><input className="input-erp" value={level.name} onChange={e => {const n = [...variationLevels]; n[lIdx].name = e.target.value; setVariationLevels(n);}} /></div>
-                                                    <div><label className="text-xs font-bold text-slate-400 mb-2 block">Options</label><input className="input-erp" value={level.options.join(',')} onChange={e => {const n = [...variationLevels]; n[lIdx].options = e.target.value.split(','); setVariationLevels(n);}} /></div>
+                                                    <div><label className={labelS}>Level Name (e.g. Spec)</label><input className="input-erp" value={level.name} onChange={e => {const n = [...variationLevels]; n[lIdx].name = e.target.value; setVariationLevels(n);}} /></div>
+                                                    <div><label className={labelS}>Options (Comma separated)</label><input className="input-erp" value={level.options.join(',')} onChange={e => {const n = [...variationLevels]; n[lIdx].options = e.target.value.split(','); setVariationLevels(n);}} /></div>
                                                 </div>
                                             </div>
                                         ))}
-                                        <button onClick={() => setVariationLevels([...variationLevels, { name: 'NEW', options: ['OPT'] }])} className="w-full border-2 border-dashed p-4 text-[10px] font-bold text-slate-400 uppercase">+ Add Level</button>
-                                        <div className="overflow-x-auto border rounded-xl shadow-sm">
+                                        <button onClick={() => setVariationLevels([...variationLevels, { name: 'Position', options: ['Front'] }])} className="w-full border-2 border-dashed border-slate-200 p-4 text-[10px] font-bold text-slate-400 hover:text-blue-600 transition-all uppercase">+ Add More Variation Level</button>
+                                        <div className="overflow-x-auto border border-slate-100 rounded-3xl shadow-sm">
                                             <table className="w-full text-left text-sm">
                                                 <thead className="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase italic">
-                                                    <tr><th className="p-5">VARIANT</th><th className="p-5">RETAIL RM</th><th className="p-5 text-blue-600">DEALER RM</th><th className="p-5">STOCK</th><th className="p-5 text-center">STATUS</th></tr>
+                                                    <tr><th className="p-5">Variant Combo</th><th className="p-5 text-blue-600">Retail RM</th><th className="p-5 text-red-500">Dealer RM</th><th className="p-5">Stock</th><th className="p-5 text-center">Status</th></tr>
                                                 </thead>
                                                 <tbody>
                                                     {variantGrid.map((v, i) => (
                                                         <tr key={i} className={`border-b border-slate-50 ${!v.is_active && 'opacity-30'}`}>
-                                                            <td className="p-5 font-bold">{v.name}</td>
+                                                            <td className="p-5 font-bold text-slate-600">{v.name}</td>
                                                             <td className="p-2"><input type="number" step="0.01" className="input-erp !p-2" value={variantGrid[i].price_b2c} onChange={e => { const g = [...variantGrid]; g[i].price_b2c = Number(e.target.value); setVariantGrid(g); }} /></td>
-                                                            <td className="p-2"><input type="number" step="0.01" className="input-erp !p-2" value={variantGrid[i].price_b2b} onChange={e => { const g = [...variantGrid]; g[i].price_b2b = Number(e.target.value); setVariantGrid(g); }} /></td>
+                                                            <td className="p-2"><input type="number" step="0.01" className="input-erp !p-2 font-bold text-blue-600" value={variantGrid[i].price_b2b} onChange={e => { const g = [...variantGrid]; g[i].price_b2b = Number(e.target.value); setVariantGrid(g); }} /></td>
                                                             <td className="p-2"><input type="number" className="input-erp !p-2 text-center" value={variantGrid[i].stock} onChange={e => { const g = [...variantGrid]; g[i].stock = Number(e.target.value); setVariantGrid(g); }} /></td>
-                                                            <td className="p-2 text-center"><button onClick={() => {const g = [...variantGrid]; g[i].is_active = !g[i].is_active; setVariantGrid(g);}} className={`px-4 py-1 rounded-full text-[8px] font-black ${v.is_active ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-500'}`}>{v.is_active ? 'ON' : 'OFF'}</button></td>
+                                                            <td className="p-2 text-center"><button onClick={() => {const g = [...variantGrid]; g[i].is_active = !g[i].is_active; setVariantGrid(g);}} className={`px-4 py-1.5 rounded-full text-[9px] font-black ${v.is_active ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-500'}`}>{v.is_active ? 'ACTIVE' : 'OFF'}</button></td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                        <div><label className={labelS}>Retail Price RM</label><input type="number" step="0.01" className={input-erp} value={formData.price_b2c} onChange={e => setFormData({...formData, price_b2c: Number(e.target.value)})} /></div>
+                                        <div><label className={labelS}>Dealer Price RM</label><input type="number" step="0.01" className={`${input-erp} text-blue-600`} value={formData.price_b2b} onChange={e => setFormData({...formData, price_b2b: Number(e.target.value)})} /></div>
+                                    </div>
                                 )}
+                            </div>
+                        )}
+                        {activeSubTab === 'ship' && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <div><label className={labelS}>Weight (KG)</label><input type="number" step="0.1" className={`${input-erp} max-w-xs`} value={formData.weight_kg} onChange={e => setFormData({...formData, weight_kg: Number(e.target.value)})} /></div>
+                                <div className="grid grid-cols-3 gap-6">
+                                    <div><label className={labelS}>L(CM)</label><input type="number" className={input-erp} value={formData.length_cm} onChange={e => setFormData({...formData, length_cm: Number(e.target.value)})} /></div>
+                                    <div><label className={labelS}>W(CM)</label><input type="number" className={input-erp} value={formData.width_cm} onChange={e => setFormData({...formData, width_cm: Number(e.target.value)})} /></div>
+                                    <div><label className={labelS}>H(CM)</label><input type="number" className={input-erp} value={formData.height_cm} onChange={e => setFormData({...formData, height_cm: Number(e.target.value)})} /></div>
+                                </div>
                             </div>
                         )}
                     </div>
                 </div>
 
                 <div className="p-10 border-t bg-slate-50 flex justify-end gap-6 mt-auto sticky bottom-0 z-10">
-                    <button onClick={() => setShowForm(false)} className="px-10 py-5 font-bold text-xs text-slate-400">Cancel</button>
-                    <button onClick={handleSave} className="px-24 py-6 bg-slate-900 text-white font-bold rounded-xl text-sm hover:bg-blue-600 transition-all shadow-xl">{isEditing ? 'COMMIT UPDATES' : 'PUBLISH LISTING'}</button>
+                    <button onClick={() => {setShowForm(false); setIsEditing(false);}} className="px-10 py-5 font-bold text-xs text-slate-400">Cancel Wizard</button>
+                    {activeSubTab !== 'ship' ? (
+                        <button onClick={() => setActiveSubTab(subTabOrder[subTabOrder.indexOf(activeSubTab) + 1])} className={`px-24 py-6 font-bold rounded-xl text-sm transition-all shadow-xl bg-blue-600 text-white hover:bg-slate-900`}>Next Step →</button>
+                    ) : (
+                        <button onClick={handleSave} className={`px-24 py-6 font-bold rounded-xl text-sm transition-all shadow-xl bg-slate-900 text-white hover:bg-blue-600`}>{isSaving ? 'Processing...' : (isEditing ? 'COMMIT UPDATES' : 'PUBLISH LISTING')}</button>
+                    )}
                 </div>
             </div>
         </div>

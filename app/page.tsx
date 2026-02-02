@@ -4,11 +4,11 @@ import FitmentSelector from '@/components/FitmentSelector'
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#ffffff]">
+    <main className="min-h-screen bg-white">
       {/* Elegant Nav */}
       <nav className="p-8 md:p-12 flex justify-between items-center max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
-            <img src="https://vaqlsjjkcctuwrskssga.supabase.co/storage/v1/object/public/logo/KEsq.png" className="h-10 w-auto" alt="Logo" />
+            <img src="https://vaqlsjjkcctuwrskssga.supabase.co/storage/v1/object/public/logo/KEsq.png" className="h-8 w-auto" alt="Logo" />
             <span className="text-xl font-bold tracking-tighter uppercase italic">Chassis Pro</span>
         </div>
         <div className="flex gap-10 items-center">
@@ -25,11 +25,13 @@ export default function Home() {
         </h1>
         
         <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto mb-16 leading-relaxed">
-            authorized handling specialists for premium malaysian suspension brands. 
-            precision fitment for proton, perodua, and beyond.
+            Authorized handling specialists for premium Malaysian suspension brands. 
+            Precision fitment for Proton, Perodua, and beyond.
         </p>
         
-        <FitmentSelector />
+        <div className="w-full max-w-4xl mx-auto">
+            <FitmentSelector />
+        </div>
       </section>
 
       {/* Partners Footer */}
@@ -40,6 +42,6 @@ export default function Home() {
               ))}
           </div>
       </footer>
-    </div>
+    </main>
   )
 }

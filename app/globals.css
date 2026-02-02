@@ -4,11 +4,10 @@
   --color-brand-dark: #111111;
   --color-brand-gray: #f9f9f9;
   --color-brand-border: #eeeeee;
-  --color-brand-accent: #e11d48; /* Keeping a tiny touch of red for the logo */
+  --color-brand-accent: #e11d48;
 }
 
 :root {
-  --font-sans: var(--font-instrument), ui-sans-serif, system-ui;
   --background: #ffffff;
   --foreground: #111111;
 }
@@ -16,9 +15,9 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-instrument), sans-serif;
   min-height: 100vh;
-  letter-spacing: -0.02em; /* This gives the high-end editorial look */
+  letter-spacing: -0.02em;
 }
 
 /* TT5 Style Input */
@@ -32,25 +31,19 @@ body {
   font-weight: 500;
   outline: none;
   transition: all 0.2s ease;
-
-  &:focus {
-    background: white;
-    border-color: #111111;
-  }
 }
 
-/* Minimalist Button */
+/* Fixed Utility Name (No pseudo-classes allowed in names) */
 @utility btn-tt5 {
   background-color: #111111;
   color: #ffffff;
   font-weight: 600;
-  padding: 1rem 2rem;
-  border-radius: 100px; /* TT5 uses very rounded pill shapes */
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
   transition: all 0.3s ease;
   border: 1px solid #111111;
-}
-
-@utility btn-tt5:hover {
-  background-color: transparent;
-  color: #111111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }

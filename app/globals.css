@@ -1,40 +1,56 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-blue: #2563eb;
-  --color-brand-navy: #0f172a;
-  --color-brand-orange: #f97316;
+  --color-brand-dark: #111111;
+  --color-brand-gray: #f9f9f9;
+  --color-brand-border: #eeeeee;
+  --color-brand-accent: #e11d48; /* Keeping a tiny touch of red for the logo */
 }
 
 :root {
-  --background: #fcfcfd;
-  --foreground: #0f172a;
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui;
+  --background: #ffffff;
+  --foreground: #111111;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  letter-spacing: -0.02em; /* This gives the high-end editorial look */
 }
 
-/* Standardizing the common elements */
-h1, h2, h3, h4 {
-  letter-spacing: -0.02em;
-  font-weight: 700;
-}
-
-label {
-  font-weight: 600;
-  font-size: 0.75rem;
-  color: #64748b; /* Slate 400 */
-  margin-bottom: 0.5rem;
-}
-
-input, select, textarea {
-  font-size: 0.875rem !important;
+/* TT5 Style Input */
+@utility input-modern {
+  width: 100%;
+  border: 1px solid #eeeeee;
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
   font-weight: 500;
+  outline: none;
+  transition: all 0.2s ease;
+
+  &:focus {
+    background: white;
+    border-color: #111111;
+  }
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+/* Minimalist Button */
+@utility btn-tt5 {
+  background-color: #111111;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 1rem 2rem;
+  border-radius: 100px; /* TT5 uses very rounded pill shapes */
+  transition: all 0.3s ease;
+  border: 1px solid #111111;
+}
+
+@utility btn-tt5:hover {
+  background-color: transparent;
+  color: #111111;
+}

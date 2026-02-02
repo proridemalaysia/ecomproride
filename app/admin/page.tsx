@@ -2,14 +2,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import DashboardTab from '@/components/admin/DashboardTab'
 import OrdersTab from '@/components/admin/OrdersTab'
 import InventoryTab from '@/components/admin/InventoryTab'
 import UsersTab from '@/components/admin/UsersTab'
 import CampaignsTab from '@/components/admin/CampaignsTab'
-import DashboardTab from '@/components/admin/DashboardTab' // Import New Component
 
 export default function AdminDashboard() {
-  // SET DEFAULT TAB TO DASHBOARD
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'products' | 'users' | 'campaigns'>('dashboard')
   const [loading, setLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -28,54 +27,50 @@ export default function AdminDashboard() {
     checkAccess()
   }, [])
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/'
-  }
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-slate-300 font-medium">Syncing Chassis Pro Admin...</div>
-  if (!isAdmin) return <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-white uppercase"><h1>Access Denied</h1><button onClick={handleLogout} className="bg-slate-900 text-white px-8 py-2 rounded-lg">Logout</button></div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-medium text-slate-300">Syncing...</div>
+  if (!isAdmin) return <div className="min-h-screen flex items-center justify-center font-bold uppercase">403 Forbidden</div>
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex font-sans">
+    <div className="min-h-screen flex bg-[#f9f9f9]">
       {/* SIDEBAR */}
-      <aside className="w-64 bg-[#0f172a] text-white flex flex-col sticky top-0 h-screen hidden lg:flex border-r border-slate-800">
-        <div className="p-8 border-b border-slate-800 flex flex-col items-center">
-            <img src="https://vaqlsjjkcctuwrskssga.supabase.co/storage/v1/object/public/logo/KEsq.png" className="h-12 w-auto mb-4" alt="KE" />
-            <h1 className="text-xl font-bold tracking-tight">Management Hub</h1>
+      <aside className="w-72 bg-[#ffffff] border-r border-[#eeeeee] flex flex-col sticky top-0 h-screen hidden lg:flex">
+        <div className="p-10 flex flex-col items-center">
+            <img src="https://vaqlsjjkcctuwrskssga.supabase.co/storage/v1/object/public/logo/KEsq.png" className="h-14 w-auto mb-6" alt="KE" />
+            <h1 className="text-sm font-bold uppercase tracking-widest text-[#111111]">Hub Manager</h1>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 mt-6">
-            <button onClick={() => setActiveTab('dashboard')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all ${activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`}>
-                Dashboard
-            </button>
-            <button onClick={() => setActiveTab('orders')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all ${activeTab === 'orders' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`}>
-                Order Processing
-            </button>
-            <button onClick={() => setActiveTab('products')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all ${activeTab === 'products' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`}>
-                Inventory Stock
-            </button>
-            <button onClick={() => setActiveTab('users')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all ${activeTab === 'users' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`}>
-                User Access Control
-            </button>
-            <button onClick={() => setActiveTab('campaigns')} className={`w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all ${activeTab === 'campaigns' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`}>
-                Marketing & Gifts
-            </button>
+        <nav className="flex-1 px-6 space-y-2 mt-4">
+            {[
+                { id: 'dashboard', name: 'Dashboard' },
+                { id: 'orders', name: 'Orders' },
+                { id: 'products', name: 'Inventory' },
+                { id: 'users', name: 'User Management' },
+                { id: 'campaigns', name: 'Campaigns' }
+            ].map(item => (
+                <button 
+                    key={item.id} 
+                    onClick={() => setActiveTab(item.id as any)}
+                    className={`w-full text-left px-6 py-4 rounded-full text-sm font-semibold transition-all ${activeTab === item.id ? 'bg-[#111111] text-white shadow-xl' : 'text-slate-400 hover:text-black hover:bg-slate-50'}`}
+                >
+                    {item.name}
+                </button>
+            ))}
         </nav>
 
-        <div className="p-6 border-t border-slate-800 mt-auto">
-            <p className="text-[10px] text-slate-500 font-bold mb-3">{userEmail}</p>
-            <button onClick={handleLogout} className="text-xs font-bold text-slate-500 hover:text-red-400 transition-colors uppercase tracking-widest">Sign Out</button>
+        <div className="p-10 border-t border-[#eeeeee]">
+            <p className="text-[10px] text-slate-300 font-bold mb-4 truncate">{userEmail}</p>
+            <button onClick={() => supabase.auth.signOut().then(() => window.location.href='/')} className="text-xs font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest">Sign Out</button>
         </div>
       </aside>
 
       {/* MAIN VIEW */}
-      <main className="flex-1 overflow-y-auto">
-        <header className="bg-white border-b border-slate-100 p-6 flex justify-between items-center sticky top-0 z-40 h-20 px-10">
-            <h2 className="text-xl font-bold text-slate-800 capitalize">{activeTab.replace('-', ' ')}</h2>
-            <Link href="/products" className="text-xs font-bold text-blue-600 hover:underline uppercase tracking-tight">View Shop →</Link>
+      <main className="flex-1">
+        <header className="bg-white/50 backdrop-blur-md p-8 flex justify-between items-center sticky top-0 z-40 px-12">
+            <h2 className="text-2xl font-bold text-slate-900 capitalize tracking-tight">{activeTab}</h2>
+            <Link href="/products" className="text-xs font-bold text-slate-400 hover:text-black border border-slate-200 px-4 py-2 rounded-full transition-all">Launch Store →</Link>
         </header>
-        <div className="p-10">
+
+        <div className="p-12 max-w-6xl mx-auto animate-in fade-in duration-700">
             {activeTab === 'dashboard' && <DashboardTab />}
             {activeTab === 'orders' && <OrdersTab />}
             {activeTab === 'products' && <InventoryTab />}

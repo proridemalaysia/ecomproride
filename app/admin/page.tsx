@@ -27,53 +27,53 @@ export default function AdminDashboard() {
     checkAccess()
   }, [])
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    window.location.href = '/'
-  }
-
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-medium text-slate-300">Syncing...</div>
-  if (!isAdmin) return <div className="min-h-screen flex items-center justify-center font-bold uppercase">403 Forbidden</div>
+  if (loading) return <div className="min-h-screen bg-white flex items-center justify-center text-slate-400 font-medium">Synchronizing Secure Hub...</div>
+  if (!isAdmin) return <div className="min-h-screen flex items-center justify-center font-bold">403 ACCESS DENIED</div>
 
   return (
-    <div className="min-h-screen flex bg-[#f9f9f9] font-sans">
-      <aside className="w-72 bg-white border-r border-[#eeeeee] flex flex-col sticky top-0 h-screen hidden lg:flex">
-        <div className="p-10 flex flex-col items-center">
-            <img src="https://vaqlsjjkcctuwrskssga.supabase.co/storage/v1/object/public/logo/KEsq.png" className="h-12 w-auto mb-6" alt="KE" />
-            <h1 className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Management Hub</h1>
+    <div className="min-h-screen flex bg-[#f4f7fa] font-sans">
+      
+      {/* SIDEBAR - INDUSTRIAL DESIGN */}
+      <aside className="w-64 bg-[#0f172a] text-white flex flex-col sticky top-0 h-screen hidden lg:flex">
+        <div className="p-8 border-b border-slate-800 flex items-center gap-3">
+            <img src="https://vaqlsjjkcctuwrskssga.supabase.co/storage/v1/object/public/logo/KEsq.png" className="h-8 w-auto brightness-200" alt="Logo" />
+            <span className="text-sm font-black tracking-widest uppercase italic">Admin Console</span>
         </div>
 
-        <nav className="flex-1 px-6 space-y-2 mt-4">
+        <nav className="flex-1 p-4 space-y-1.5 mt-4">
             {[
-                { id: 'dashboard', name: 'Dashboard' },
-                { id: 'orders', name: 'Orders' },
-                { id: 'products', name: 'Inventory' },
-                { id: 'users', name: 'Users' },
-                { id: 'campaigns', name: 'Campaigns' }
+                { id: 'dashboard', name: 'Overview' },
+                { id: 'orders', name: 'Pending Orders' },
+                { id: 'products', name: 'Parts Inventory' },
+                { id: 'users', name: 'Customer Database' },
+                { id: 'campaigns', name: 'Vouchers & Gifts' }
             ].map(item => (
                 <button 
                     key={item.id} 
                     onClick={() => setActiveTab(item.id as any)}
-                    className={`w-full text-left px-6 py-4 rounded-full text-sm font-semibold transition-all ${activeTab === item.id ? 'bg-[#111111] text-white shadow-xl' : 'text-slate-400 hover:text-black'}`}
+                    className={`w-full text-left px-5 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === item.id ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`}
                 >
                     {item.name}
                 </button>
             ))}
         </nav>
 
-        <div className="p-10 border-t border-[#eeeeee]">
-            <p className="text-[10px] text-slate-300 font-bold mb-4 truncate">{userEmail}</p>
-            <button onClick={handleLogout} className="text-xs font-bold text-slate-400 hover:text-brand-accent uppercase tracking-widest transition-colors">Sign Out</button>
+        <div className="p-6 bg-black/20 border-t border-slate-800">
+            <p className="text-[10px] text-slate-500 font-bold mb-3 truncate">{userEmail}</p>
+            <button onClick={() => supabase.auth.signOut().then(() => window.location.href='/')} className="text-[11px] font-black text-slate-400 hover:text-red-400 transition-colors uppercase tracking-widest">Sign Out Hub</button>
         </div>
       </aside>
 
-      <main className="flex-1">
-        <header className="bg-white/50 backdrop-blur-md p-8 flex justify-between items-center sticky top-0 z-40 px-12 border-b border-[#eeeeee]">
-            <h2 className="text-xl font-bold text-slate-900 capitalize tracking-tight">{activeTab}</h2>
-            <Link href="/products" className="text-[10px] font-bold text-slate-400 hover:text-black border border-slate-200 px-4 py-2 rounded-full transition-all uppercase tracking-widest">View Store</Link>
+      {/* MAIN VIEW */}
+      <main className="flex-1 min-w-0">
+        <header className="bg-white border-b border-slate-200 p-6 flex justify-between items-center sticky top-0 z-40 px-10 h-20">
+            <h2 className="text-xl font-extrabold text-slate-900 capitalize tracking-tight">{activeTab}</h2>
+            <div className="flex gap-4">
+                <Link href="/products" className="text-xs font-bold text-slate-400 hover:text-blue-600 px-4 py-2 border border-slate-100 rounded-lg transition-all">Launch Store</Link>
+            </div>
         </header>
 
-        <div className="p-12 max-w-7xl mx-auto animate-in fade-in duration-700">
+        <div className="p-8 md:p-12 max-w-[1600px] mx-auto animate-in fade-in duration-500">
             {activeTab === 'dashboard' && <DashboardTab />}
             {activeTab === 'orders' && <OrdersTab />}
             {activeTab === 'products' && <InventoryTab />}

@@ -37,50 +37,55 @@ export default function DashboardTab() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  if (loading) return <div className="py-20 text-center text-slate-300 animate-pulse font-bold tracking-widest">GATHERING SYSTEM DATA...</div>
+  if (loading) return <div className="py-20 text-center text-slate-300 animate-pulse font-black text-xl tracking-[0.5em]">GATHERING BUSINESS INTELLIGENCE...</div>
 
   return (
     <div className="space-y-12">
       
-      {/* 1. ANALYTICS GRID - Sharp & Bold */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* 1. ANALYTICS GRID - Large Headers & Sharp Borders */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {[
             { label: 'GROSS REVENUE', value: `RM ${stats.totalSales.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`, color: 'text-blue-600' },
-            { label: 'TOTAL ORDERS', value: stats.orderCount, color: 'text-slate-800' },
-            { label: 'ACTIVE INVENTORY', value: stats.productCount, color: 'text-slate-800' },
-            { label: 'REGISTERED USERS', value: stats.userCount, color: 'text-slate-800' }
+            { label: 'TOTAL ORDERS', value: stats.orderCount, color: 'text-slate-900' },
+            { label: 'ACTIVE INVENTORY', value: stats.productCount, color: 'text-slate-900' },
+            { label: 'REGISTERED USERS', value: stats.userCount, color: 'text-slate-900' }
         ].map((stat, i) => (
-            <div key={i} className="bg-white border border-slate-200 p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">{stat.label}</p>
-                <p className={`text-4xl font-extrabold tracking-tighter ${stat.color}`}>{stat.value}</p>
+            <div key={i} className="bg-white border-2 border-slate-100 p-10 rounded-2xl shadow-sm hover:border-blue-100 transition-all">
+                {/* BIGGER HEADERS */}
+                <p className="text-sm font-black text-slate-400 uppercase tracking-[0.25em] mb-4">{stat.label}</p>
+                <p className={`text-5xl font-black tracking-tighter ${stat.color}`}>{stat.value}</p>
             </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           
-          {/* 2. SALES ACTIVITY - Fills more space */}
-          <section className="lg:col-span-2 space-y-4">
-            <div className="flex justify-between items-center px-2">
-                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest">Recent Sales Pipeline</h3>
-                <span className="text-[10px] font-bold text-slate-400">Showing last 6</span>
+          {/* 2. RECENT SALES PIPELINE - Fills the wide space */}
+          <section className="lg:col-span-2 space-y-6">
+            <div className="flex justify-between items-end px-4 border-b-2 border-slate-100 pb-4">
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight italic">Recent Sales Pipeline</h3>
+                <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Live View (Last 6)</span>
             </div>
-            <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                <div className="divide-y divide-slate-100">
+            
+            <div className="bg-white border-2 border-slate-100 rounded-[2.5rem] shadow-sm overflow-hidden">
+                <div className="divide-y-2 divide-slate-50">
                     {recentOrders.map(order => (
-                        <div key={order.id} className="p-6 flex justify-between items-center hover:bg-slate-50 transition-colors">
-                            <div className="flex items-center gap-5">
-                                <div className="bg-slate-100 w-10 h-10 rounded-lg flex items-center justify-center font-black text-slate-400 text-[10px]">
+                        <div key={order.id} className="p-8 flex justify-between items-center hover:bg-slate-50/50 transition-colors">
+                            <div className="flex items-center gap-8">
+                                <div className="bg-slate-100 w-12 h-12 rounded-xl flex items-center justify-center font-black text-slate-400">
                                     {order.status === 'PAID' ? '💰' : '📦'}
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-slate-800 uppercase">{order.customer_name}</p>
-                                    <p className="text-[10px] text-slate-400 font-bold tracking-widest mt-1">Order Ref: #{order.id.slice(0,5).toUpperCase()}</p>
+                                    {/* BIGGER NAMES */}
+                                    <p className="text-xl font-extrabold text-slate-900 tracking-tight uppercase">{order.customer_name}</p>
+                                    {/* READABLE ORDER ID */}
+                                    <p className="text-xs font-black text-slate-400 tracking-[0.2em] mt-1 uppercase opacity-70">REF: #{order.id.slice(0,8).toUpperCase()}</p>
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <p className="text-base font-black text-slate-900 tracking-tight">RM {Number(order.total_amount).toFixed(2)}</p>
-                                <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full mt-1 inline-block ${order.status === 'PAID' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+                            <div className="text-right space-y-2">
+                                <p className="text-2xl font-black text-slate-900 tracking-tighter italic">RM {Number(order.total_amount).toFixed(2)}</p>
+                                {/* BIGGER STATUS BADGE */}
+                                <span className={`text-[10px] font-black uppercase px-4 py-1.5 rounded-full inline-block tracking-widest ${order.status === 'PAID' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
                                     {order.status}
                                 </span>
                             </div>
@@ -90,26 +95,25 @@ export default function DashboardTab() {
             </div>
           </section>
 
-          {/* 3. USER BASE ACTIVITY */}
-          <section className="space-y-4">
-            <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest ml-2">New Specialists</h3>
-            <div className="bg-white border border-slate-200 rounded-xl shadow-sm p-6 space-y-6">
+          {/* 3. NEW SPECIALISTS - Right Sidebar */}
+          <section className="space-y-6">
+            <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight ml-4 italic border-b-2 border-slate-100 pb-4">New Specialists</h3>
+            <div className="bg-white border-2 border-slate-100 rounded-[2.5rem] shadow-sm p-10 space-y-8">
                 {recentUsers.map(user => (
                     <div key={user.id} className="flex items-center justify-between group">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-black tracking-tighter">
+                        <div className="flex items-center gap-5">
+                            <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-xs font-black tracking-tighter shadow-lg shadow-slate-900/20">
                                 {user.email?.substring(0, 2).toUpperCase()}
                             </div>
                             <div>
-                                <p className="text-xs font-bold text-slate-800 lowercase">{user.email}</p>
-                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{user.role}</p>
+                                <p className="text-sm font-black text-slate-900 lowercase">{user.email}</p>
+                                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">{user.role}</p>
                             </div>
                         </div>
-                        <span className="text-[9px] font-bold text-slate-300 group-hover:text-blue-500 transition-colors">{new Date(user.created_at).toLocaleDateString()}</span>
                     </div>
                 ))}
-                <button className="w-full py-4 border-2 border-dashed border-slate-100 rounded-xl text-[10px] font-black text-slate-400 hover:border-slate-300 hover:text-slate-600 transition-all uppercase tracking-widest">
-                    Manage All Users
+                <button className="w-full py-5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-[11px] font-black text-slate-400 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all uppercase tracking-[0.3em] italic">
+                    All Customer Data →
                 </button>
             </div>
           </section>
